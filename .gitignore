@@ -1,0 +1,5 @@
+videos/
+previews/
+json/
+.direnv/
+.DS_Store
