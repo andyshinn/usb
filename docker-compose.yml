@@ -8,7 +8,7 @@ services:
     - "discovery.type=single-node"
     - "cluster.name=app-search-docker-cluster"
     - "bootstrap.memory_lock=true"
-    - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
     ulimits:
       memlock:
         soft: -1
@@ -24,6 +24,17 @@ services:
     - "JAVA_OPTS=-Xms2g -Xmx2g"
     ports:
     - 3002:3002
+
+  broker:
+    image: rabbitmq:3.8.2
+    environment:
+      RABBITMQ_DEFAULT_USER: celery
+      RABBITMQ_DEFAULT_PASS: wh4tsth3d34l
+      RABBITMQ_DEFAULT_VHOST: celery
+
+  worker:
+    build: .
+    command: celery -A usb.tasks worker -b amqp://celery:wh4tsth3d34l@broker:5672/celery
 
 volumes:
   es:

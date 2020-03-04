@@ -3,3 +3,5 @@ previews/
 json/
 .direnv/
 .DS_Store
+.venv/
+__pycache__/

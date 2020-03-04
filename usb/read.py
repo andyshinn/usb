@@ -12,32 +12,20 @@ FILE_JSON = "json/{}.json"
 FILE_VIDEO = "videos/{}.mkv"
 VIDEO = False
 INDEX = True
+REGEX_SEASON = r"(?:[Ss](\d{1,2}))"
+REGEX_EPISODES = r"(?:[Ee](\d{2})+)"
+
 EP_REGEX = '^(s\\d{2})((?:e\\d{2})+)$'
-API_KEY = 'private-2dp5rm5rrn4tfqii3v262c8p'
+API_KEY = 'private-dw8nq5a2uqw1p97kn4mcadys'
 
 
-def chunks(lst, n):
-    """Yield successive n-sized chunks from lst."""
-    for i in range(0, len(lst), n):
-        yield lst[i:i + n]
+
 
 
 def msecs(start, end):
     return ((start + (end - start) / 2).total_seconds() * 1000)
 
 
-def serialized_subtitle(subtitle, season, episode, image):
-    return {
-        "id": "seinfeld-{}{}-{}".format(season, episode, subtitle.index),
-        "episode": episode,
-        "season": season,
-        "index": subtitle.index,
-        "start": str(subtitle.start),
-        "end": str(subtitle.end),
-        "milliseconds_middle": msecs(subtitle.start, subtitle.end),
-        "content": subtitle.content,
-        "preview": image,
-    }
 
 
 def parse_subtitles(path="subs/*.srt"):
@@ -47,11 +35,7 @@ def parse_subtitles(path="subs/*.srt"):
         parsed_subtitles = list(srt.parse(file.read()))
 
 
-client = Client(
-    base_endpoint='localhost:3002/api/as/v1',
-    api_key=API_KEY,
-    use_https=False,
-)
+
 
 for file in glob.glob("subs/*.srt"):
     with open(file, 'r') as subtitle_file:

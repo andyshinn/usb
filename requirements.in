@@ -3,3 +3,5 @@ opencv-python-headless
 elastic-app-search
 loguru
 invoke
+celery
+pytest
