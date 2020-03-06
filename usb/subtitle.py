@@ -8,7 +8,7 @@ from loguru import logger
 
 from usb.utils import parse_season, parse_episodes, chunks, formatted_episodes
 
-API_KEY = 'private-dw8nq5a2uqw1p97kn4mcadys'
+API_KEY = 'private-ekzi3dcd8usuwtakwudttgcm'
 
 
 def serialized_subtitle(subtitle, season, episodes, image):

@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yml
+    kompose.version: 1.19.0 (f63a961c)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: elasticsearch
+  name: elasticsearch
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      io.kompose.service: elasticsearch
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f docker-compose.yml
+        kompose.version: 1.19.0 (f63a961c)
+      creationTimestamp: null
+      labels:
+        io.kompose.service: elasticsearch
+    spec:
+      containers:
+      - env:
+        - name: ES_JAVA_OPTS
+          value: -Xms1g -Xmx1g
+        - name: bootstrap.memory_lock
+          value: "true"
+        - name: cluster.name
+          value: app-search-docker-cluster
+        - name: discovery.type
+          value: single-node
+        - name: node.name
+          value: es-node
+        image: docker.elastic.co/elasticsearch/elasticsearch:7.6.0
+        name: elasticsearch
+        resources: {}
+        volumeMounts:
+        - mountPath: /usr/share/elasticsearch/data
+          name: usb-es
+      restartPolicy: Always
+      volumes:
+      - name: usb-es
+        persistentVolumeClaim:
+          claimName: usb-es
+status: {}

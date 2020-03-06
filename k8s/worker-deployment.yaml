@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yml
+    kompose.version: 1.19.0 (f63a961c)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: worker
+  name: worker
+spec:
+  replicas: 1
+  strategy: {}
+  selector:
+    matchLabels:
+      io.kompose.service: worker
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f docker-compose.yml
+        kompose.version: 1.19.0 (f63a961c)
+      creationTimestamp: null
+      labels:
+        io.kompose.service: worker
+    spec:
+      containers:
+      - args:
+        - celery
+        - -A
+        - usb.tasks
+        - worker
+        - -b
+        - amqp://celery:wh4tsth3d34l@broker:5672/celery
+        image: worker
+        name: worker
+        resources: {}
+      restartPolicy: Always
+status: {}

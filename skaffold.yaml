@@ -1,0 +1,12 @@
+apiVersion: skaffold/v2alpha4
+kind: Config
+metadata:
+  name: usb
+build:
+  artifacts:
+  - image: worker
+  local:
+    useBuildkit: true
+    push: true
+deploy:
+  kubectl:
