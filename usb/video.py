@@ -31,8 +31,9 @@ class VideoFile:
     def _write_image_text(self, dest, image, text):
         font                   = cv2.FONT_HERSHEY_SIMPLEX
         fontScale              = 1.5
-        fontColor              = (255,255,255)
-        thickness               = 3
+        white                  = (255, 255, 255)
+        black                  = (0, 0, 0)
+        thickness              = 4
 
         y0, dy = 100, 50
         for i, line in enumerate(text.split('\n')):
@@ -42,7 +43,13 @@ class VideoFile:
                 (y0, y),
                 font,
                 fontScale,
-                fontColor,
+                black,
+                thickness+8)
+            cv2.putText(image, line,
+                (y0, y),
+                font,
+                fontScale,
+                white,
                 thickness)
 
         return cv2.imwrite(dest, image)
