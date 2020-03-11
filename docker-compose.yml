@@ -23,7 +23,7 @@ services:
     - "allow_es_settings_modification=true"
     - "JAVA_OPTS=-Xms2g -Xmx2g"
     ports:
-    - 3002:3002
+      - 3002:3002
 
   broker:
     image: rabbitmq:3.8.2
@@ -35,6 +35,15 @@ services:
   worker:
     build: .
     command: celery -A usb.tasks worker -b amqp://celery:wh4tsth3d34l@broker:5672/celery
+    volumes:
+      - /home/andys/Videos:/videos:ro
+      - ./thumbnails:/thumbnails
+
+  flower:
+    build: .
+    command: celery -A usb.tasks flower -b amqp://celery:wh4tsth3d34l@broker:5672/celery --address=0.0.0.0 --port=5555
+    ports:
+      - 5555:5555
 
 volumes:
   es:

@@ -1,7 +1,11 @@
-srt
-opencv-python-headless
-elastic-app-search
-loguru
-invoke
 celery
+elastic-app-search
+flower
+guessit
+inflect
+invoke
+loguru
+opencv-python-headless
 pytest
+sh
+srt

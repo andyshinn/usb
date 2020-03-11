@@ -1,6 +1,6 @@
 import os
-import glob
 import re
+import tempfile
 
 import srt
 from elastic_app_search import Client
@@ -8,7 +8,18 @@ from loguru import logger
 
 from usb.utils import parse_season, parse_episodes, chunks, formatted_episodes
 
-API_KEY = 'private-ekzi3dcd8usuwtakwudttgcm'
+API_KEY = 'private-yc37nkt5qg748amjwq7fawc4'
+
+
+
+class Subtitles:
+    def __init__(self, file):
+        self.file = file
+
+
+    @property
+    def list(self):
+        return list(srt.parse(self.file.read().decode('utf-8')))
 
 
 def serialized_subtitle(subtitle, season, episodes, image):
@@ -35,10 +46,6 @@ def process_subtitles(path="subs/*.srt"):
         process_subtitle(file)
 
 
-def get_subtitle_files(path):
-    return glob.glob(path)
-
-
 def index_subtitle(file):
     fname = os.path.splitext(os.path.basename(file))[0]
     season = parse_season(fname)
@@ -56,3 +63,10 @@ def index_subtitle(file):
             subtitles.append(document)
 
         index_subtitles(subtitles)
+
+
+def create_subtitle_files(path):
+    for file in glob.iglob('{}/**/*.mkv'.format(os.path.normpath(path)), recursive=True):
+        guess = guessit(file)
+        ep = english_season_episode(guess)
+        logger.info("{1:<25s} {0}", ep, guess['episode_title'].title())
