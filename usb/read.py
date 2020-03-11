@@ -22,12 +22,6 @@ API_KEY = 'private-dw8nq5a2uqw1p97kn4mcadys'
 
 
 
-def msecs(start, end):
-    return ((start + (end - start) / 2).total_seconds() * 1000)
-
-
-
-
 def parse_subtitles(path="subs/*.srt"):
     subtitles = []
 

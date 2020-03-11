@@ -48,7 +48,11 @@ def is_iterable(object):
 
     return False
 
-# 
+
+def msecs(start, end):
+    return ((start + (end - start) / 2).total_seconds() * 1000)
+
+#
 # def english_season_episode(guess):
 #     ep = "Season {} {} {}".format(
 #         guess['season'],
