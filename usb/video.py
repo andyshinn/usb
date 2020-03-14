@@ -4,6 +4,7 @@ import cv2
 from guessit import guessit
 import inflect
 from loguru import logger
+import srt
 
 from usb.extract import Extractor
 from usb.subtitle import Subtitles
@@ -20,12 +21,12 @@ class VideoFile:
         self.show = info['title']
         self.title = info['episode_title']
         self.season = info['season']
-        self.video = cv2.VideoCapture(path)
+        self.video = cv2.VideoCapture(str(path))
 
         if is_iterable(info['episode']):
-            self.episode = info['episode']
+            self.episodes = info['episode']
         else:
-            self.episode = [info['episode']]
+            self.episodes = [info['episode']]
 
 
     def _write_image_text(self, dest, image, text):
@@ -56,15 +57,11 @@ class VideoFile:
 
 
     def extract_subs(self):
-        subtitles = []
-
         with tempfile.NamedTemporaryFile() as subfile:
             Extractor(self.path).extract(subfile.name)
 
-            for subtitle in Subtitles(subfile).list:
-                subtitles.append(subtitle)
-
-        return subtitles
+            for subtitle in srt.parse(subfile.read().decode('utf-8')):
+                yield subtitle
 
 
     def thumbnail(self, msec, dest, text):
@@ -85,6 +82,6 @@ class VideoFile:
         return "{} season {} {} {}".format(
             self.show,
             self.season,
-            p.plural("episode", len(self.episode)),
-            p.join(self.episode)
+            p.plural("episode", len(self.episodes)),
+            p.join(self.episodes)
         )

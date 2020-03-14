@@ -1,0 +1,7 @@
+tricks:
+- watchdog.tricks.ShellCommandTrick:
+    ignore_directories: [".direnv", ".git"]
+    patterns: ["**/*.py"]
+    shell_command: docker-compose up --build -d
+    wait_for_process: True
+    drop_during_process: True

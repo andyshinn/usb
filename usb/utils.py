@@ -1,10 +1,10 @@
 import re
-import glob
 from typing import Iterable
+from pathlib import Path
 
 import inflect
 
-
+GLOB = '**/*.mkv'
 REGEX_SEASON = r"(?:[Ss](\d{2}))"
 REGEX_EPISODES = r"(?:[Ee](\d{2}))"
 
@@ -33,13 +33,8 @@ def formatted_episodes(episodes):
     return "-".join(str(x) for x in episodes)
 
 
-def chunks(lst, n):
-    for i in range(0, len(lst), n):
-        yield lst[i:i + n]
-
-
-def get_files(path):
-    return glob.glob(path)
+def get_mkvs(path):
+    return Path(path).glob(GLOB)
 
 
 def is_iterable(object):
@@ -50,14 +45,4 @@ def is_iterable(object):
 
 
 def msecs(start, end):
-    return ((start + (end - start) / 2).total_seconds() * 1000)
-
-#
-# def english_season_episode(guess):
-#     ep = "Season {} {} {}".format(
-#         guess['season'],
-#         p.plural("episode", len(slist(guess['episode']))),
-#         p.join(slist(guess['episode']))
-#     )
-#
-#     return ep
+    return round((start + (end - start) / 2).total_seconds() * 1000)

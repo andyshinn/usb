@@ -7,5 +7,6 @@ invoke
 loguru
 opencv-python-headless
 pytest
+requests
 sh
 srt

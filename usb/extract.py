@@ -138,6 +138,7 @@ class Extractor(object):
 
         try:
             for chunk in mkvextract(
+                '-q',
                 mkv_file,
                 'tracks',
                 '{}:{}'.format(track_number, subtitle_file),

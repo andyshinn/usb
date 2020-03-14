@@ -35,6 +35,8 @@ services:
   worker:
     build: .
     command: celery -A usb.tasks worker -b amqp://celery:wh4tsth3d34l@broker:5672/celery
+    environment:
+      - APPSEARCH_PRIVATE_KEY
     volumes:
       - /home/andys/Videos:/videos:ro
       - ./thumbnails:/thumbnails
