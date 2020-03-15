@@ -5,6 +5,7 @@ from requests.exceptions import HTTPError
 from usb.utils import formatted_episodes, msecs
 from usb.subtitle import Subtitles
 from usb.video import VideoFile
+from usb.search import Appsearch
 
 app = Celery('tasks', broker='pyamqp://celery:wh4tsth3d34l@broker/celery')
 
@@ -41,3 +42,14 @@ def process_video(file):
 def extract_thumbnail(file, milliseconds, dest, text):
     video = VideoFile(file)
     video.thumbnail(milliseconds, dest, text)
+
+
+@app.task
+def extract_thumbnail_id(id):
+    search = Appsearch()
+    document = search.get_document(id)
+
+    dest = "/thumbnails/{}.png".format(id)
+
+    video = VideoFile(document['path'])
+    video.thumbnail(document['timems'], dest, document['content'])

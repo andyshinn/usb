@@ -39,7 +39,18 @@ services:
       - APPSEARCH_PRIVATE_KEY
     volumes:
       - /home/andys/Videos:/videos:ro
-      - ./thumbnails:/thumbnails
+      - thumbs:/thumbnails
+
+  web:
+    build: .
+    command: flask run -h 0.0.0.0
+    environment:
+      - APPSEARCH_PRIVATE_KEY
+      - FLASK_APP=usb.server
+    volumes:
+      - thumbs:/thumbnails:ro
+    ports:
+      - 5000:5000
 
   flower:
     build: .
@@ -49,4 +60,6 @@ services:
 
 volumes:
   es:
+    driver: local
+  thumbs:
     driver: local

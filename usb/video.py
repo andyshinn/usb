@@ -65,7 +65,7 @@ class VideoFile:
 
 
     def thumbnail(self, msec, dest, text):
-        self.video.set(cv2.CAP_PROP_POS_MSEC, msec)
+        self.video.set(cv2.CAP_PROP_POS_MSEC, int(msec))
         success, image = self.video.retrieve()
 
         if success:

@@ -1,5 +1,6 @@
 celery
 elastic-app-search
+flask
 flower
 guessit
 inflect
@@ -7,6 +8,7 @@ invoke
 loguru
 opencv-python-headless
 pytest
+watchdog[watchmedo]
 requests
 sh
 srt
