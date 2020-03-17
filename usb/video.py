@@ -1,16 +1,14 @@
 import tempfile
 
-import cv2
 from guessit import guessit
 import inflect
 from loguru import logger
+from moviepy.editor import VideoFileClip, CompositeVideoClip, TextClip
 import srt
 
 from usb.extract import Extractor
 from usb.subtitle import Subtitles
-from usb.utils import is_iterable
-
-p = inflect.engine()
+from usb.utils import is_iterable, formatted_video
 
 
 class VideoFile:
@@ -21,7 +19,7 @@ class VideoFile:
         self.show = info['title']
         self.title = info['episode_title']
         self.season = info['season']
-        self.video = cv2.VideoCapture(str(path))
+        self.video = VideoFileClip(path, target_resolution=(360, 640), verbose=False)
 
         if is_iterable(info['episode']):
             self.episodes = info['episode']
@@ -29,31 +27,24 @@ class VideoFile:
             self.episodes = [info['episode']]
 
 
-    def _write_image_text(self, dest, image, text):
-        font                   = cv2.FONT_HERSHEY_SIMPLEX
-        fontScale              = 1.5
-        white                  = (255, 255, 255)
-        black                  = (0, 0, 0)
-        thickness              = 4
+    @staticmethod
+    def _generate_text(text):
+        common = {
+            "txt": text,
+            "size": (600, 100),
+            "method": 'caption',
+            "font": 'Impact',
+            "fontsize": 30,
+            "align": "South"
+        }
 
-        y0, dy = 100, 50
-        for i, line in enumerate(text.split('\n')):
-            y = y0 + i*dy
+        txt_clip = TextClip(color='white', stroke_color='white', stroke_width=1, **common)
+        txt_clip = txt_clip.set_pos((20,250))
 
-            cv2.putText(image, line,
-                (y0, y),
-                font,
-                fontScale,
-                black,
-                thickness+8)
-            cv2.putText(image, line,
-                (y0, y),
-                font,
-                fontScale,
-                white,
-                thickness)
+        txt_bg = TextClip(color='black', stroke_color='black', stroke_width=5, **common)
+        txt_bg = txt_bg.set_pos((20,250))
 
-        return cv2.imwrite(dest, image)
+        return CompositeVideoClip([txt_bg, txt_clip], size=(720, 1280))
 
 
     def extract_subs(self):
@@ -64,24 +55,20 @@ class VideoFile:
                 yield subtitle
 
 
-    def thumbnail(self, msec, dest, text):
-        self.video.set(cv2.CAP_PROP_POS_MSEC, int(msec))
-        success, image = self.video.retrieve()
+    def thumbnail(self, time, dest, text):
+        text_clip = VideoFile._generate_text(text)
+        text_clip.duration = self.video.duration
 
-        if success:
+        video = CompositeVideoClip([self.video, text_clip])
+
+        video.duration = self.video.duration
+
+        try:
+            video.save_frame(dest, t=(time + 1.0))
             logger.info('writing out thumbnail: {}', dest)
-            success = self._write_image_text(dest, image, text)
-
-            if not success:
-                logger.info('failed writing thumbnail: {}', dest)
-        else:
-            logger.info('failed to capture frame from video: {}', self.path)
+        except Exception as e:
+            raise
 
 
     def __str__(self):
-        return "{} season {} {} {}".format(
-            self.show,
-            self.season,
-            p.plural("episode", len(self.episodes)),
-            p.join(self.episodes)
-        )
+        return formatted_video(self.show, self.season, self.episodes)

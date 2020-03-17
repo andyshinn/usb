@@ -33,6 +33,15 @@ def formatted_episodes(episodes):
     return "-".join(str(x) for x in episodes)
 
 
+def formatted_video(show, season, episodes):
+    return "{} season {} {} {}".format(
+        show,
+        season,
+        p.plural("episode", len(episodes)),
+        p.join(episodes)
+    )
+
+
 def get_mkvs(path):
     return Path(path).glob(GLOB)
 

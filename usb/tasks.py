@@ -32,7 +32,7 @@ def process_video(file):
     extract_task = group(extract_thumbnail.s(
         file,
         msecs(sub.start, sub.end),
-        "/thumbnails/{}-{}-{}-{}.png".format(video.show, video.season, formatted_episodes(video.episodes), sub.index),
+        "/thumbnails/{}-{}-{}-{}.png".format(video.show.lower(), video.season, formatted_episodes(video.episodes), sub.index),
         sub.content
     ) for sub in subs)
     extract_task.apply_async()
@@ -52,4 +52,4 @@ def extract_thumbnail_id(id):
     dest = "/thumbnails/{}.png".format(id)
 
     video = VideoFile(document['path'])
-    video.thumbnail(document['timems'], dest, document['content'])
+    video.thumbnail(float(document['seconds_middle']), dest, document['content'])

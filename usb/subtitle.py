@@ -13,7 +13,7 @@ from usb.search import Appsearch
 
 class Document:
     def __init__(self, **kwargs):
-        allowed_types = [str, int, list]
+        allowed_types = [str, int, list, float]
 
         self.__dict__.update((key, value) for key, value in kwargs.items()
                              if type(value) in allowed_types)
@@ -51,7 +51,13 @@ class Subtitles:
     @property
     def documents(self):
         for subtitle in self.list:
-            yield Document(**vars(self.video), **vars(subtitle))
+            yield Document(
+                **vars(self.video),
+                **vars(subtitle),
+                seconds_start=subtitle.start.total_seconds(),
+                seconds_middle=((subtitle.start.total_seconds() + subtitle.end.total_seconds()) / 2),
+                seconds_end=subtitle.end.total_seconds()
+            )
 
 
     @property

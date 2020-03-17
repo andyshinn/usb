@@ -6,7 +6,7 @@ guessit
 inflect
 invoke
 loguru
-opencv-python-headless
+moviepy
 pytest
 watchdog[watchmedo]
 requests
