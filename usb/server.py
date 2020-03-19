@@ -1,6 +1,5 @@
 from flask import Flask, escape, request, make_response, send_file
 from pathlib import Path
-import random
 
 from usb.tasks import extract_thumbnail_id
 from usb.search import Appsearch
@@ -22,17 +21,14 @@ def get_image(id):
 @app.route('/search/<query>')
 def image_search(query):
     search = Appsearch()
-    results = search.query(escape(query))
 
-    if results['results']:
-        if request.args.get('rand', None):
-            result = random.choice(results['results'])
-        else:
-            result = results['results'][0]
+    rand = bool(request.args.get('rand', False))
+    result = search.get(escape(query), rand)
 
+    if result:
         id = result['id']['raw']
     else:
-        return "no results found", 404
+        return "no result found", 404
 
     path = Path(f'/thumbnails/{id}.png')
 

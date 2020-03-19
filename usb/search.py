@@ -1,4 +1,5 @@
 import os
+import random
 
 from elastic_app_search import Client
 
@@ -28,3 +29,17 @@ class Appsearch:
 
     def query(self, query):
         return self.client.search(self.engine, query)
+
+
+    def get(self, query, rand=True):
+        results = self.client.search(self.engine, query)
+
+        if results['results']:
+            if rand:
+                result = random.choice(results['results'])
+            else:
+                result = results['results'][0]
+
+            return result
+
+        return None

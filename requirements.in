@@ -1,4 +1,5 @@
 celery
+discord.py
 elastic-app-search
 flask
 flower
@@ -8,7 +9,8 @@ invoke
 loguru
 moviepy
 pytest
-watchdog[watchmedo]
+redis
 requests
 sh
 srt
+watchdog[watchmedo]

@@ -34,12 +34,18 @@ services:
 
   worker:
     build: .
-    command: celery -A usb.tasks worker -b amqp://celery:wh4tsth3d34l@broker:5672/celery
+    command: celery -A usb.tasks worker -b amqp://celery:wh4tsth3d34l@broker:5672/celery --result-backend redis://result
     environment:
       - APPSEARCH_PRIVATE_KEY
     volumes:
       - /home/andys/Videos:/videos:ro
       - thumbs:/thumbnails
+
+  result:
+    image: redis:5.0
+    command: redis-server --appendonly yes
+    volumes:
+      - results:/data
 
   web:
     build: .
@@ -54,12 +60,24 @@ services:
 
   flower:
     build: .
-    command: celery -A usb.tasks flower -b amqp://celery:wh4tsth3d34l@broker:5672/celery --address=0.0.0.0 --port=5555
+    command: celery -A usb.tasks flower -b amqp://celery:wh4tsth3d34l@broker:5672/celery --result-backend redis://result --address=0.0.0.0 --port=5555
     ports:
       - 5555:5555
+
+  bot:
+    build: .
+    command: python3 -m usb.bot
+    stop_grace_period: 15s
+    environment:
+      - DISCORD_TOKEN
+      - APPSEARCH_PRIVATE_KEY
+    volumes:
+      - thumbs:/thumbnails:ro
 
 volumes:
   es:
     driver: local
   thumbs:
+    driver: local
+  results:
     driver: local

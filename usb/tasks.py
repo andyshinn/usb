@@ -7,7 +7,11 @@ from usb.subtitle import Subtitles
 from usb.video import VideoFile
 from usb.search import Appsearch
 
-app = Celery('tasks', broker='pyamqp://celery:wh4tsth3d34l@broker/celery')
+app = Celery(
+    'tasks',
+    broker='pyamqp://celery:wh4tsth3d34l@broker/celery',
+    backend='redis://result'
+)
 
 
 @app.task(bind=True)
@@ -53,3 +57,5 @@ def extract_thumbnail_id(id):
 
     video = VideoFile(document['path'])
     video.thumbnail(float(document['seconds_middle']), dest, document['content'])
+
+    return dest
