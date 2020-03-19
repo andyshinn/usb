@@ -8,14 +8,17 @@ ENGINE = 'usb'
 ENDPOINT = 'appsearch:3002/api/as/v1'
 
 
-class Appsearch:
-    def __init__(self, base_endpoint=ENDPOINT, api_key=API_KEY, engine=ENGINE):
-        self.client = Client(base_endpoint=base_endpoint, api_key=api_key ,use_https=False)
-        self.engine = engine
+class Appsearch(Client):
+    def __init__(self, endpoint=ENDPOINT, api_key=API_KEY):
+        super(Appsearch, self).__init__(
+            base_endpoint=endpoint,
+            api_key=api_key,
+            use_https=False
+        )
 
 
-    def get_document(self, id):
-        documents = self.client.get_documents(self.engine, [id])
+    def get_document(self, engine, id):
+        documents = self.get_documents(engine, [id])
 
         if len(documents) == 1:
             return documents[0]
@@ -23,16 +26,8 @@ class Appsearch:
         return None
 
 
-    def index(self, documents):
-        return self.client.index_documents(self.engine, documents)
-
-
-    def query(self, query):
-        return self.client.search(self.engine, query)
-
-
-    def get(self, query, rand=True):
-        results = self.client.search(self.engine, query)
+    def get(self, engine, query, rand=True):
+        results = self.search(engine, query)
 
         if results['results']:
             if rand:

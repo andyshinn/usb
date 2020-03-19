@@ -1,6 +1,7 @@
 from celery import Celery, group
 from loguru import logger
 from requests.exceptions import HTTPError
+from elastic_app_search.exceptions import BadRequest
 
 from usb.utils import formatted_episodes, msecs
 from usb.subtitle import Subtitles
@@ -18,10 +19,16 @@ app = Celery(
 def process_subtitle(self, path):
     video = VideoFile(path)
     subtitles = Subtitles(video)
-    try:
-        subtitles.index()
-    except HTTPError as e:
-        self.retry(countdown=10, exc=e)
+
+    if video.ignored:
+        logger.warning("video {} ignored, skipping processing")
+        return "video ignored, skipping processing"
+    else:
+        try:
+            subtitles.index()
+        except (HTTPError, BadRequest) as e:
+            self.retry(countdown=10, exc=e)
+
 
 
 @app.task
@@ -36,7 +43,7 @@ def process_video(file):
     extract_task = group(extract_thumbnail.s(
         file,
         msecs(sub.start, sub.end),
-        "/thumbnails/{}-{}-{}-{}.png".format(video.show.lower(), video.season, formatted_episodes(video.episodes), sub.index),
+        "/thumbnails/{}-{}-{}-{}.png".format(video.show.lower(), video.season, formatted_episodes(video.episode), sub.index),
         sub.content
     ) for sub in subs)
     extract_task.apply_async()
@@ -49,9 +56,9 @@ def extract_thumbnail(file, milliseconds, dest, text):
 
 
 @app.task
-def extract_thumbnail_id(id):
+def extract_thumbnail_id(engine, id):
     search = Appsearch()
-    document = search.get_document(id)
+    document = search.get_document(engine, id)
 
     dest = "/thumbnails/{}.png".format(id)
 

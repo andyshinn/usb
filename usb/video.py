@@ -1,4 +1,5 @@
 import tempfile
+from pathlib import PosixPath
 
 from guessit import guessit
 import inflect
@@ -11,20 +12,37 @@ from usb.subtitle import Subtitles
 from usb.utils import is_iterable, formatted_video
 
 
-class VideoFile:
+IGNORE_EPISODES = {
+    "Seinfeld": {
+        6: [14, 15],
+        9: [21, 22]
+    }
+}
+
+
+class InfoMixin:
     def __init__(self, path):
-        info = guessit(path)
+        self.__dict__.update(guessit(path))
 
-        self.path = path
-        self.show = info['title']
-        self.title = info['episode_title']
-        self.season = info['season']
-        self.video = VideoFileClip(path, target_resolution=(360, 640), verbose=False)
 
-        if is_iterable(info['episode']):
-            self.episodes = info['episode']
-        else:
-            self.episodes = [info['episode']]
+class VideoFile(InfoMixin, PosixPath):
+    def __init__(self, path):
+        super(VideoFile, self).__init__(path)
+
+        self.video_clip = VideoFileClip(path, target_resolution=(360, 640), verbose=False)
+        self.path = str(self)
+
+        if not is_iterable(self.episode):
+            self.episode = [self.episode]
+
+
+    @property
+    def ignored(self):
+        ignored_show = IGNORE_EPISODES.get(self.title)
+        if ignored_show:
+            if self.season in ignored_show:
+                return all(ep in self.episode for ep in ignored_show.get(self.season))
+        return False
 
 
     @staticmethod
@@ -49,7 +67,7 @@ class VideoFile:
 
     def extract_subs(self):
         with tempfile.NamedTemporaryFile() as subfile:
-            Extractor(self.path).extract(subfile.name)
+            Extractor(str(self)).extract(subfile.name)
 
             for subtitle in srt.parse(subfile.read().decode('utf-8')):
                 yield subtitle
@@ -57,18 +75,12 @@ class VideoFile:
 
     def thumbnail(self, time, dest, text):
         text_clip = VideoFile._generate_text(text)
-        text_clip.duration = self.video.duration
-
-        video = CompositeVideoClip([self.video, text_clip])
-
-        video.duration = self.video.duration
+        text_clip.duration = self.video_clip.duration
+        video = CompositeVideoClip([self.video_clip, text_clip])
+        video.duration = self.video_clip.duration
 
         try:
             video.save_frame(dest, t=(time + 1.0))
             logger.info('writing out thumbnail: {}', dest)
         except Exception as e:
             raise
-
-
-    def __str__(self):
-        return formatted_video(self.show, self.season, self.episodes)

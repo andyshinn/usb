@@ -6,24 +6,25 @@ from usb.search import Appsearch
 
 app = Flask(__name__)
 
-@app.route('/image/<id>.png')
-def get_image(id):
+@app.route('/image/<show>/<id>.png')
+def get_image(show, id):
     path = Path(f'/thumbnails/{id}.png')
     if path.is_file():
         return send_file(path)
     else:
-        task = extract_thumbnail_id.delay(id)
+        task = extract_thumbnail_id.delay(engine, id)
         resp = make_response(f'{escape(id)} is being processed as task {escape(task)}', 202)
         resp.headers['Retry-After'] = 10
         return resp
 
 
-@app.route('/search/<query>')
-def image_search(query):
+@app.route('/search/<show>/<query>')
+def image_search(show, query):
     search = Appsearch()
+    engine = show.lower()
 
-    rand = bool(request.args.get('rand', False))
-    result = search.get(escape(query), rand)
+    random = bool(request.args.get('random', False))
+    result = search.get(engine, escape(query), random)
 
     if result:
         id = result['id']['raw']
@@ -32,10 +33,9 @@ def image_search(query):
 
     path = Path(f'/thumbnails/{id}.png')
 
-    if path.is_file():
-        return send_file(path)
-    else:
-        task = extract_thumbnail_id.delay(id)
-        resp = make_response(f'generating {escape(id)} for query {escape(query)}\nrefresh page in a moment', 202)
-        resp.headers['Retry-After'] = 10
-        return resp
+    if not path.is_file():
+        task = extract_thumbnail_id.delay(engine, id)
+        path = task.get(timeout=10)
+        path = Path(path)
+
+    return send_file(path)

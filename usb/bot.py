@@ -38,10 +38,11 @@ bot = Bot(command_prefix=PREFIXES)
 
 @bot.command(name='with')
 async def image(ctx, *, query):
+    engine = 'seinfeld'
     logger.info('{} called with command: {}', ctx.author, query)
-    result = ctx.bot.search.get(query)
+    result = ctx.bot.search.get(engine, query)
     logger.debug(result)
-    task = extract_thumbnail_id.delay(result['id']['raw'])
+    task = extract_thumbnail_id.delay(engine, result['id']['raw'])
     logger.debug(task)
 
 

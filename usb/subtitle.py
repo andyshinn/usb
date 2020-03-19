@@ -4,7 +4,7 @@ import tempfile
 from itertools import chain, islice
 
 from srt import Subtitle
-from elastic_app_search import Client
+from elastic_app_search.exceptions import NonExistentRecord
 from loguru import logger
 
 from usb.utils import formatted_episodes, msecs
@@ -23,7 +23,7 @@ class Document:
 
     @property
     def id(self):
-        return "{}-{}-{}-{}".format(self.show.lower(), self.season, formatted_episodes(self.episodes), self.index)
+        return "{}-{}-{}-{}".format(self.title.lower(), self.season, formatted_episodes(self.episode), self.index)
 
 
     @property
@@ -33,7 +33,6 @@ class Document:
 
     def __repr__(self):
         return "{}({!r})".format(self.__class__.__name__, self.id)
-
 
 
 class Subtitles:
@@ -68,6 +67,14 @@ class Subtitles:
 
 
     def index(self):
+        engine = self.video.title.lower()
+        logger.debug("engine: {}", engine)
+
+        try:
+            self.appsearch.get_engine(engine)
+        except NonExistentRecord as e:
+            self.appsearch.create_engine(engine, 'en')
+
         for n, chunk in enumerate(self.documents_chunked):
-            documents = self.appsearch.index([i.data for i in list(chunk)])
+            documents = self.appsearch.index_documents(engine, [i.data for i in list(chunk)])
             logger.debug('indexed {} chunk {} containing {}', str(self.video), n, len(documents))
