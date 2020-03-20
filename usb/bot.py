@@ -17,34 +17,30 @@ PREFIXES = [
 ]
 
 
-
 class Bot(commands.Bot):
     def __init__(self, **kwargs):
         super(Bot, self).__init__(guild_subscriptions=False, **kwargs)
-        self.search = Appsearch()
-
 
     async def on_ready(self):
         logger.info('{} has connected to Discord!', self.user)
-
 
     async def on_message(self, message):
         logger.info('Message from {0.author}: {0.content}', message)
         await bot.process_commands(message)
 
 
-
 bot = Bot(command_prefix=PREFIXES)
+search = Appsearch()
+
 
 @bot.command(name='with')
 async def image(ctx, *, query):
     engine = 'seinfeld'
     logger.info('{} called with command: {}', ctx.author, query)
-    result = ctx.bot.search.get(engine, query)
+    result = search.get(engine, query, rand=False)
     logger.debug(result)
     task = extract_thumbnail_id.delay(engine, result['id']['raw'])
     logger.debug(task)
-
 
     file = task.get(timeout=10)
 

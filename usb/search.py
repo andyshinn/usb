@@ -16,7 +16,6 @@ class Appsearch(Client):
             use_https=False
         )
 
-
     def get_document(self, engine, id):
         documents = self.get_documents(engine, [id])
 
@@ -24,7 +23,6 @@ class Appsearch(Client):
             return documents[0]
 
         return None
-
 
     def get(self, engine, query, rand=True):
         results = self.search(engine, query)

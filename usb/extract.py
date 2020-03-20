@@ -1,14 +1,5 @@
 # https://github.com/0x64746b/matitor
-#
-# from __future__ import (
-#     absolute_import,
-#     division,
-#     print_function,
-#     unicode_literals,
-# )
 
-
-import argparse
 from os import path
 import re
 import sys
@@ -72,9 +63,9 @@ class Extractor(object):
     def _parse_segment(self, info):
 
         segment = re.search(
-            '^\|\+ Tracks\n'
-            '^(.*?)'
-            '^\|\+ ',
+            r'^\|\\+ Tracks\n'
+            r'^(.*?)'
+            r'^\|\+ ',
             info.decode('utf-8'),
             re.MULTILINE | re.DOTALL
         ).group(1)
@@ -91,8 +82,8 @@ class Extractor(object):
         for track in tracks:
             if re.search('Track type: subtitles', track):
                 track_num = re.search(
-                    'Track number: \d+'
-                    ' \(track ID for mkvmerge & mkvextract: (\d+)\)\n',
+                    r'Track number: \d+'
+                    r' \(track ID for mkvmerge & mkvextract: (\d+)\)\n',
                     track
                 ).group(1)
 
@@ -146,21 +137,10 @@ class Extractor(object):
                 _out_bufsize=64,
             ):
                 sys.stdout.write(chunk)
-        except sh.ErrorReturnCode as error:
+        except ErrorReturnCode as error:
             sys.exit(
                 '{} exited with code {}'.format(
                     error.full_cmd,
                     error.exit_code
                 )
             )
-
-# if __name__ == '__main__':
-#
-#     parser = argparse.ArgumentParser(description=__doc__)
-#     parser.add_argument(
-#         'mkv_file',
-#         help='the .mkv to extract an .srt from'
-#     )
-#     args = parser.parse_args()
-#
-#     Extractor().extract(args.mkv_file)

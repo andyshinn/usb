@@ -30,7 +30,6 @@ def process_subtitle(self, path):
             self.retry(countdown=10, exc=e)
 
 
-
 @app.task
 def finish_indexing(count):
     logger.info("finished indexing {} episodes".format(count))

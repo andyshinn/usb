@@ -6,9 +6,12 @@ from usb.search import Appsearch
 
 app = Flask(__name__)
 
+
 @app.route('/image/<show>/<id>.png')
 def get_image(show, id):
+    engine = show.lower()
     path = Path(f'/thumbnails/{id}.png')
+
     if path.is_file():
         return send_file(path)
     else:
