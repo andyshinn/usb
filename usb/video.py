@@ -10,12 +10,7 @@ from usb.extract import Extractor
 from usb.utils import is_iterable
 
 
-IGNORE_EPISODES = {
-    "Seinfeld": {
-        6: [14, 15],
-        9: [21, 22]
-    }
-}
+IGNORE_EPISODES = {"Seinfeld": {6: [14, 15], 9: [21, 22]}}
 
 
 class InfoMixin:
@@ -27,7 +22,9 @@ class VideoFile(InfoMixin, PosixPath):
     def __init__(self, path):
         super(VideoFile, self).__init__(path)
 
-        self.video_clip = VideoFileClip(path, target_resolution=(360, 640), verbose=False)
+        self.video_clip = VideoFileClip(
+            path, target_resolution=(360, 640), verbose=False
+        )
         self.path = str(self)
 
         if not is_iterable(self.episode):
@@ -46,16 +43,18 @@ class VideoFile(InfoMixin, PosixPath):
         common = {
             "txt": text,
             "size": (600, 100),
-            "method": 'caption',
-            "font": 'Impact',
+            "method": "caption",
+            "font": "Impact",
             "fontsize": 30,
-            "align": "South"
+            "align": "South",
         }
 
-        txt_clip = TextClip(color='white', stroke_color='white', stroke_width=1, **common)
+        txt_clip = TextClip(
+            color="white", stroke_color="white", stroke_width=1, **common
+        )
         txt_clip = txt_clip.set_pos((20, 250))
 
-        txt_bg = TextClip(color='black', stroke_color='black', stroke_width=5, **common)
+        txt_bg = TextClip(color="black", stroke_color="black", stroke_width=5, **common)
         txt_bg = txt_bg.set_pos((20, 250))
 
         return CompositeVideoClip([txt_bg, txt_clip], size=(720, 1280))
@@ -64,7 +63,7 @@ class VideoFile(InfoMixin, PosixPath):
         with tempfile.NamedTemporaryFile() as subfile:
             Extractor(str(self)).extract(subfile.name)
 
-            for subtitle in srt.parse(subfile.read().decode('utf-8')):
+            for subtitle in srt.parse(subfile.read().decode("utf-8")):
                 yield subtitle
 
     def thumbnail(self, time, dest, text):
@@ -75,6 +74,6 @@ class VideoFile(InfoMixin, PosixPath):
 
         try:
             video.save_frame(dest, t=(time + 1.0))
-            logger.info('writing out thumbnail: {}', dest)
+            logger.info("writing out thumbnail: {}", dest)
         except Exception:
             logger.opt(exception=True).debug("Exception logged with debug level:")

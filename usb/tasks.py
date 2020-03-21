@@ -9,9 +9,9 @@ from usb.video import VideoFile
 from usb.search import Appsearch
 
 app = Celery(
-    'tasks',
-    broker='pyamqp://celery:wh4tsth3d34l@broker/celery',
-    backend='redis://result'
+    "tasks",
+    broker="pyamqp://celery:wh4tsth3d34l@broker/celery",
+    backend="redis://result",
 )
 
 
@@ -39,12 +39,20 @@ def finish_indexing(count):
 def process_video(file):
     video = VideoFile(file)
     subs = video.extract_subs()
-    extract_task = group(extract_thumbnail.s(
-        file,
-        msecs(sub.start, sub.end),
-        "/thumbnails/{}-{}-{}-{}.png".format(video.show.lower(), video.season, formatted_episodes(video.episode), sub.index),
-        sub.content
-    ) for sub in subs)
+    extract_task = group(
+        extract_thumbnail.s(
+            file,
+            msecs(sub.start, sub.end),
+            "/thumbnails/{}-{}-{}-{}.png".format(
+                video.show.lower(),
+                video.season,
+                formatted_episodes(video.episode),
+                sub.index,
+            ),
+            sub.content,
+        )
+        for sub in subs
+    )
     extract_task.apply_async()
 
 
@@ -61,7 +69,7 @@ def extract_thumbnail_id(engine, id):
 
     dest = "/thumbnails/{}.png".format(id)
 
-    video = VideoFile(document['path'])
-    video.thumbnail(float(document['seconds_middle']), dest, document['content'])
+    video = VideoFile(document["path"])
+    video.thumbnail(float(document["seconds_middle"]), dest, document["content"])
 
     return dest

@@ -4,7 +4,7 @@ from pathlib import Path
 
 import inflect
 
-GLOB = '**/*.mkv'
+GLOB = "**/*.mkv"
 REGEX_SEASON = r"(?:[Ss](\d{2}))"
 REGEX_EPISODES = r"(?:[Ee](\d{2}))"
 
@@ -35,10 +35,7 @@ def formatted_episodes(episodes):
 
 def formatted_video(show, season, episodes):
     return "{} season {} {} {}".format(
-        show,
-        season,
-        p.plural("episode", len(episodes)),
-        p.join(episodes)
+        show, season, p.plural("episode", len(episodes)), p.join(episodes)
     )
 
 

@@ -5,12 +5,12 @@ from usb.utils import parse_season, parse_episodes
 
 @pytest.fixture
 def episode_multi():
-    return 's05e17e18'
+    return "s05e17e18"
 
 
 @pytest.fixture
 def episode_single():
-    return 'S07E09'
+    return "S07E09"
 
 
 def test_parse_season(episode_single, episode_multi):
