@@ -6,14 +6,14 @@ metadata:
     kompose.version: 1.19.0 (f63a961c)
   creationTimestamp: null
   labels:
-    io.kompose.service: worker
-  name: worker
+    io.kompose.service: web
+  name: web
 spec:
   replicas: 1
   strategy: {}
   selector:
     matchLabels:
-      io.kompose.service: worker
+      io.kompose.service: web
   template:
     metadata:
       annotations:
@@ -21,22 +21,22 @@ spec:
         kompose.version: 1.19.0 (f63a961c)
       creationTimestamp: null
       labels:
-        io.kompose.service: worker
+        io.kompose.service: web
     spec:
       containers:
       - args:
-        - celery
-        - -A
-        - usb.tasks
-        - worker
-        - -b
-        - amqp://celery:wh4tsth3d34l@broker:5672/celery
+        - flask
+        - run
+        - -h
+        - 0.0.0.0
         image: usb
+        name: web
+        resources: {}
         env:
           - name: APPSEARCH_PRIVATE_KEY
             value: private-eqkrnozy622akrgn8esfrszp
-        name: worker
-        resources: {}
+          - name: FLASK_APP
+            value: usb.server
         volumeMounts:
         - mountPath: /videos
           name: videos

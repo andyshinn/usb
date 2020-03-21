@@ -32,3 +32,10 @@ spec:
           backend:
             serviceName: appsearch
             servicePort: 3002
+  - host: web-127-0-0-1.nip.io
+    http:
+      paths:
+        - path: /
+          backend:
+            serviceName: web
+            servicePort: 5000

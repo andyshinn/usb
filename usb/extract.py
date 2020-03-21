@@ -37,33 +37,24 @@ class Extractor(object):
 
     def extract(self, subtitle_file=None):
         tracks = self._get_tracks(self.mkv_file)
-        if len(tracks) > 1:
-            selected_track = self._ask_for_choice(tracks)
-        else:
-            selected_track = tracks[0].number
+        selected_track = tracks[0].number
 
         self._extract_track(self.mkv_file, selected_track, subtitle_file)
 
     def _get_tracks(self, mkv_file):
         info = mkvinfo(mkv_file).stdout
-        # print(info)
 
         try:
             raw_tracks = self._parse_segment(info)
         except AttributeError:
-            sys.exit(
-                'Failed to find tracks segment in {}: {}'.format(
-                    mkv_file,
-                    info
-                )
-            )
+            raise
 
         return self._parse_tracks(raw_tracks)
 
     def _parse_segment(self, info):
 
         segment = re.search(
-            r'^\|\\+ Tracks\n'
+            r'^\|\+ Tracks\n'
             r'^(.*?)'
             r'^\|\+ ',
             info.decode('utf-8'),
@@ -88,12 +79,12 @@ class Extractor(object):
                 ).group(1)
 
                 language = re.search(
-                    'Language: (.+)',
+                    r'Language: (.+)',
                     track
                 ).group(1)
 
                 name_field = re.search(
-                    'Name: (.+)',
+                    r'Name: (.+)',
                     track
                 )
                 name = name_field.group(1) if name_field else ''
@@ -101,24 +92,6 @@ class Extractor(object):
                 subtitle_tracks.append(Track(track_num, language, name))
 
         return subtitle_tracks
-
-    def _ask_for_choice(self, subtitle_tracks):
-
-        for track in subtitle_tracks:
-            print(track)
-
-        selected_track = input(
-            'Please enter the number of the track to be extracted: '
-        )
-
-        if selected_track in [track.number for track in subtitle_tracks]:
-            return selected_track
-        else:
-            sys.exit(
-                '{} is not a valid track number. Exiting.'.format(
-                    selected_track
-                )
-            )
 
     def _extract_track(self, mkv_file, track_number, subtitle_file):
         if subtitle_file is None:
@@ -138,9 +111,4 @@ class Extractor(object):
             ):
                 sys.stdout.write(chunk)
         except ErrorReturnCode as error:
-            sys.exit(
-                '{} exited with code {}'.format(
-                    error.full_cmd,
-                    error.exit_code
-                )
-            )
+            raise error

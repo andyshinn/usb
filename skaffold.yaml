@@ -4,7 +4,7 @@ metadata:
   name: usb
 build:
   artifacts:
-  - image: worker
+  - image: usb
   local:
     useBuildkit: true
     push: true
