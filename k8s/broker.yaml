@@ -4,13 +4,11 @@ metadata:
   annotations:
     kompose.cmd: kompose convert -f docker-compose.yml
     kompose.version: 1.19.0 (f63a961c)
-  creationTimestamp: null
   labels:
     io.kompose.service: broker
   name: broker
 spec:
   replicas: 1
-  strategy: {}
   selector:
     matchLabels:
       io.kompose.service: broker
@@ -19,7 +17,6 @@ spec:
       annotations:
         kompose.cmd: kompose convert -f docker-compose.yml
         kompose.version: 1.19.0 (f63a961c)
-      creationTimestamp: null
       labels:
         io.kompose.service: broker
     spec:
@@ -33,6 +30,21 @@ spec:
           value: celery
         image: rabbitmq:3.8.2
         name: broker
-        resources: {}
       restartPolicy: Always
-status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yml
+    kompose.version: 1.19.0 (f63a961c)
+  labels:
+    io.kompose.service: broker
+  name: broker
+spec:
+  ports:
+  - name: rabbitmq
+    port: 5672
+    targetPort: 5672
+  selector:
+    io.kompose.service: broker

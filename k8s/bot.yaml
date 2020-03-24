@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yml
+    kompose.version: 1.19.0 (f63a961c)
+  labels:
+    io.kompose.service: bot
+  name: bot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: bot
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f docker-compose.yml
+        kompose.version: 1.19.0 (f63a961c)
+      labels:
+        io.kompose.service: bot
+    spec:
+      containers:
+        - image: usb
+          args: ["python3", "-m", "usb.bot"]
+          env:
+            - name: APPSEARCH_PRIVATE_KEY
+              value: private-53spr5yxryvos8w3fo3upnrs
+            - name: DISCORD_TOKEN
+              value: Njg5OTQwNTcwODE4MzQ3MDA5.XnKM5g.HkvE4o0aFNQCNSZfsuxw4oDkWKA
+          name: bot
+          volumeMounts:
+            - mountPath: /thumbnails
+              name: thumbnails
+              readOnly: true
+      restartPolicy: Always
+      volumes:
+        - name: thumbnails
+          persistentVolumeClaim:
+            claimName: thumbnails
+            readOnly: true

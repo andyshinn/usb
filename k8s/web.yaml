@@ -19,22 +19,16 @@ spec:
       annotations:
         kompose.cmd: kompose convert -f docker-compose.yml
         kompose.version: 1.19.0 (f63a961c)
-      creationTimestamp: null
       labels:
         io.kompose.service: web
     spec:
       containers:
-      - args:
-        - flask
-        - run
-        - -h
-        - 0.0.0.0
+      - args: ["flask", "run", "-h", "0.0.0.0"]
         image: usb
         name: web
-        resources: {}
         env:
           - name: APPSEARCH_PRIVATE_KEY
-            value: private-eqkrnozy622akrgn8esfrszp
+            value: private-53spr5yxryvos8w3fo3upnrs
           - name: FLASK_APP
             value: usb.server
         volumeMounts:
@@ -47,3 +41,20 @@ spec:
             path: /videos
             type: Directory
 status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yml
+    kompose.version: 1.19.0 (f63a961c)
+  labels:
+    io.kompose.service: web
+  name: web
+spec:
+  ports:
+  - name: "5000"
+    port: 5000
+    targetPort: 5000
+  selector:
+    io.kompose.service: web

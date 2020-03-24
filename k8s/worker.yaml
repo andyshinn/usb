@@ -10,7 +10,6 @@ metadata:
   name: worker
 spec:
   replicas: 1
-  strategy: {}
   selector:
     matchLabels:
       io.kompose.service: worker
@@ -24,26 +23,38 @@ spec:
         io.kompose.service: worker
     spec:
       containers:
-      - args:
-        - celery
-        - -A
-        - usb.tasks
-        - worker
-        - -b
-        - amqp://celery:wh4tsth3d34l@broker:5672/celery
+      - args: ["celery", "-A", "usb.tasks", "worker"]
         image: usb
         env:
           - name: APPSEARCH_PRIVATE_KEY
-            value: private-eqkrnozy622akrgn8esfrszp
+            value: private-53spr5yxryvos8w3fo3upnrs
         name: worker
         resources: {}
         volumeMounts:
-        - mountPath: /videos
-          name: videos
+          - mountPath: /videos
+            name: videos
+          - mountPath: /thumbnails
+            name: thumbnails
+            readOnly: false
       restartPolicy: Always
       volumes:
         - name: videos
           hostPath:
             path: /videos
             type: Directory
-status: {}
+        - name: thumbnails
+          persistentVolumeClaim:
+            claimName: thumbnails
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    io.kompose.service: thumbnails
+  name: thumbnails
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi

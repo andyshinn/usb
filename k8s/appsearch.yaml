@@ -38,3 +38,21 @@ spec:
         resources: {}
       restartPolicy: Always
 status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yml
+    kompose.version: 1.19.0 (f63a961c)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: appsearch
+  name: appsearch
+spec:
+  ports:
+  - name: "3002"
+    port: 3002
+    targetPort: 3002
+  selector:
+    io.kompose.service: appsearch
