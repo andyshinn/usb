@@ -27,7 +27,10 @@ spec:
             - name: APPSEARCH_PRIVATE_KEY
               value: private-53spr5yxryvos8w3fo3upnrs
             - name: DISCORD_TOKEN
-              value: Njg5OTQwNTcwODE4MzQ3MDA5.XnKM5g.HkvE4o0aFNQCNSZfsuxw4oDkWKA
+              valueFrom:
+              secretKeyRef:
+                name: discord-bot-token
+                key: DISCORD_TOKEN
           name: bot
           volumeMounts:
             - mountPath: /thumbnails
