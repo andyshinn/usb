@@ -11,6 +11,39 @@ from usb.tasks import extract_thumbnail_id
 TOKEN = os.getenv("DISCORD_TOKEN")
 PREFIXES = ["!deal ", "what's the deal ", "whats the deal ", "what the deal "]
 
+search = Appsearch()
+
+
+class Quotes(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+
+    @commands.Cog.listener()
+    async def on_reaction_add(self, reaction, user):
+        logger.debug("reaction: {}", reaction)
+        if "seinfeld" in str(reaction):
+            logger.debug("sending image from reaction: {}", str(reaction))
+            await self.image(await self.bot.get_context(reaction.message), query=reaction.message.content)
+
+        await logger.complete()
+
+    @commands.command()
+    async def image(self, ctx, *, query):
+        engine = "seinfeld"
+        logger.info("{} called with command: {}", ctx.author, query)
+        result = search.get(engine, query, rand=False)
+        logger.debug(result)
+        task = extract_thumbnail_id.delay(engine, result["id"]["raw"])
+        logger.debug(task)
+
+        file = task.get(timeout=10)
+
+        with open(file, "rb") as f:
+            picture = File(f)
+            await ctx.send(file=picture)
+
+        await logger.complete()
+
 
 class Bot(commands.Bot):
     def __init__(self, **kwargs):
@@ -25,26 +58,7 @@ class Bot(commands.Bot):
 
 
 bot = Bot(command_prefix=PREFIXES)
-search = Appsearch()
-
-
-@bot.command(name="with")
-async def image(ctx, *, query):
-    engine = "seinfeld"
-    logger.info("{} called with command: {}", ctx.author, query)
-    result = search.get(engine, query, rand=False)
-    logger.debug(result)
-    task = extract_thumbnail_id.delay(engine, result["id"]["raw"])
-    logger.debug(task)
-
-    file = task.get(timeout=10)
-
-    with open(file, "rb") as f:
-        picture = File(f)
-        await ctx.send(file=picture)
-
-    await logger.complete()
-
+bot.add_cog(Quotes(bot))
 
 if __name__ == "__main__":
     bot.run(TOKEN)

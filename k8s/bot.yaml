@@ -26,11 +26,13 @@ spec:
           env:
             - name: APPSEARCH_PRIVATE_KEY
               value: private-53spr5yxryvos8w3fo3upnrs
+            - name: PYTHONASYNCIODEBUG
+              value: "1"
             - name: DISCORD_TOKEN
               valueFrom:
-              secretKeyRef:
-                name: discord-bot-token
-                key: DISCORD_TOKEN
+                secretKeyRef:
+                  name: discord-bot-token
+                  key: DISCORD_TOKEN
           name: bot
           volumeMounts:
             - mountPath: /thumbnails
