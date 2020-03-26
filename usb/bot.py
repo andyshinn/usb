@@ -10,6 +10,7 @@ from usb.tasks import extract_thumbnail_id
 
 TOKEN = os.getenv("DISCORD_TOKEN")
 PREFIXES = ["what's the deal ", "what’s the deal ", "whats the deal ", "what the deal "]
+REACTIONS = ["whatsthedealwith", "seinfeld"]
 
 search = Appsearch()
 
@@ -33,8 +34,8 @@ class Quotes(commands.Cog):
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
-        logger.debug("reaction: {}", reaction)
-        if "seinfeld" in str(reaction):
+        logger.debug("reaction: {}", str(reaction))
+        if any(x in str(reaction) for x in REACTIONS):  # TODO: use discord.py native emoji classes for comparison
             logger.info("sending image from reaction: {}", str(reaction))
             await self.image(
                 await self.bot.get_context(reaction.message),
