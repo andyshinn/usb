@@ -28,6 +28,11 @@ spec:
         env:
           - name: APPSEARCH_PRIVATE_KEY
             value: private-53spr5yxryvos8w3fo3upnrs
+          - name: SENTRY_DSN
+            valueFrom:
+              secretKeyRef:
+                name: sentry
+                key: dsn
         name: worker
         resources: {}
         volumeMounts:

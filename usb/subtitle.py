@@ -1,8 +1,8 @@
 from itertools import chain, islice
 
 from elastic_app_search.exceptions import NonExistentRecord
-from loguru import logger
 
+from usb.logging import logger
 from usb.utils import formatted_episodes, msecs
 from usb.search import Appsearch
 

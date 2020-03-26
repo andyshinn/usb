@@ -11,6 +11,7 @@ moviepy
 pytest
 redis
 requests
+sentry-sdk
 sh
 srt
 watchdog[watchmedo]

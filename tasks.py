@@ -1,6 +1,6 @@
 from invoke import task
-from loguru import logger
 
+from usb.logging import logger
 from usb.utils import get_mkvs
 from usb.tasks import process_subtitle, process_video
 

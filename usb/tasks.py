@@ -1,8 +1,8 @@
 from celery import Celery, group
-from loguru import logger
 from requests.exceptions import HTTPError
 from elastic_app_search.exceptions import BadRequest
 
+from usb.logging import logger
 from usb.utils import formatted_episodes, msecs
 from usb.subtitle import Subtitles
 from usb.video import VideoFile

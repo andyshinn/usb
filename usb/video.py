@@ -2,10 +2,10 @@ import tempfile
 from pathlib import PosixPath
 
 from guessit import guessit
-from loguru import logger
 from moviepy.editor import VideoFileClip, CompositeVideoClip, TextClip
 import srt
 
+from usb.logging import logger
 from usb.extract import Extractor
 from usb.utils import is_iterable
 

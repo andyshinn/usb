@@ -28,11 +28,19 @@ spec:
               value: private-53spr5yxryvos8w3fo3upnrs
             - name: PYTHONASYNCIODEBUG
               value: "1"
+            - name: LOGURU_LEVEL
+              value: INFO
             - name: DISCORD_TOKEN
               valueFrom:
                 secretKeyRef:
                   name: discord-bot-token
                   key: DISCORD_TOKEN
+            - name: SENTRY_DSN
+              valueFrom:
+                secretKeyRef:
+                  name: sentry
+                  key: dsn
+
           name: bot
           volumeMounts:
             - mountPath: /thumbnails
