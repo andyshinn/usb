@@ -1,7 +1,7 @@
 import re
 from typing import Iterable
-from pathlib import Path
 
+import fsspec
 import inflect
 
 GLOB = "**/*.mkv"
@@ -40,7 +40,7 @@ def formatted_video(show, season, episodes):
 
 
 def get_mkvs(path):
-    return Path(path).glob(GLOB)
+    return fsspec.open_files(path, auto_mkdirs=False)
 
 
 def is_iterable(object):

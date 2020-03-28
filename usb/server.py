@@ -1,46 +1,43 @@
-from flask import Flask, escape, request, make_response, send_file
-from pathlib import Path
+from aiohttp import web
+import fsspec
 
 from usb.tasks import extract_thumbnail_id
 from usb.search import Appsearch
+from usb.logging import logger
 
-app = Flask(__name__)
+app = web.Application()
+routes = web.RouteTableDef()
 
-
-@app.route("/image/<show>/<id>.png")
-def get_image(show, id):
-    engine = show.lower()
-    path = Path(f"/thumbnails/{id}.png")
-
-    if path.is_file():
-        return send_file(path)
-    else:
-        task = extract_thumbnail_id.delay(engine, id)
-        resp = make_response(
-            f"{escape(id)} is being processed as task {escape(task)}", 202
-        )
-        resp.headers["Retry-After"] = 10
-        return resp
+routes.static("/thumbnails", "/thumbnails", show_index=True)
 
 
-@app.route("/search/<show>/<query>")
-def image_search(show, query):
+@routes.get("/search/{show}/{query}")
+async def image_search(request):
     search = Appsearch()
+    show = request.match_info["show"]
+    query = request.match_info["query"]
     engine = show.lower()
 
-    random = bool(request.args.get("random", False))
-    result = search.get(engine, escape(query), random)
+    random = bool(request.query.get("random", False))
+    result = search.get(engine, query, random)
+
+    logger.debug("Result from query: {}", result)
 
     if result:
         id = result["id"]["raw"]
     else:
-        return "no result found", 404
+        raise web.HTTPNotFound(reason=f"Could not find any image for query: {query}")
 
-    path = Path(f"/thumbnails/{id}.png")
+    of = fsspec.open(f"/thumbnails/{id}.png")
 
-    if not path.is_file():
+    if not of.fs.isfile(of.path):
         task = extract_thumbnail_id.delay(engine, id)
-        path = task.get(timeout=10)
-        path = Path(path)
+        of.path = task.get(timeout=10)
 
-    return send_file(path)
+    logger.complete()
+
+    raise web.HTTPFound(of.path)
+
+
+app.add_routes(routes)
+web.run_app(app, port=5000)

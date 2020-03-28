@@ -23,12 +23,15 @@ spec:
         io.kompose.service: web
     spec:
       containers:
-      - args: ["flask", "run", "-h", "0.0.0.0"]
+      - args: ["python", "-m", "usb.server"]
         image: usb
         name: web
         env:
           - name: APPSEARCH_PRIVATE_KEY
-            value: private-53spr5yxryvos8w3fo3upnrs
+            valueFrom:
+              secretKeyRef:
+                name: appsearch
+                key: private_key
           - name: FLASK_APP
             value: usb.server
         volumeMounts:

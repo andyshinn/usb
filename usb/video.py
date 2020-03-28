@@ -1,5 +1,4 @@
 import tempfile
-from pathlib import PosixPath
 
 from guessit import guessit
 from moviepy.editor import VideoFileClip, CompositeVideoClip, TextClip
@@ -18,14 +17,14 @@ class InfoMixin:
         self.__dict__.update(guessit(path))
 
 
-class VideoFile(InfoMixin, PosixPath):
+class VideoFile(InfoMixin):
     def __init__(self, path):
         super(VideoFile, self).__init__(path)
 
         self.video_clip = VideoFileClip(
             path, target_resolution=(360, 640), verbose=False
         )
-        self.path = str(self)
+        self.path = path
 
         if not is_iterable(self.episode):
             self.episode = [self.episode]

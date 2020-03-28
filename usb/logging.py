@@ -9,9 +9,7 @@ sentry_sdk.init(integrations=[CeleryIntegration(), AioHttpIntegration()])
 def breadcrumb_sink(message):
     record = message.record
     sentry_sdk.add_breadcrumb(
-        category=record["name"],
-        message=record["message"],
-        level=record["level"].name,
+        category=record["name"], message=record["message"], level=record["level"].name
     )
 
 

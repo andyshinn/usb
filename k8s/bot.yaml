@@ -25,7 +25,10 @@ spec:
           args: ["python3", "-m", "usb.bot"]
           env:
             - name: APPSEARCH_PRIVATE_KEY
-              value: private-53spr5yxryvos8w3fo3upnrs
+              valueFrom:
+                secretKeyRef:
+                  name: appsearch
+                  key: private_key
             - name: PYTHONASYNCIODEBUG
               value: "1"
             - name: LOGURU_LEVEL

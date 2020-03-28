@@ -1,7 +1,5 @@
 from itertools import chain, islice
 
-from elastic_app_search.exceptions import NonExistentRecord
-
 from usb.logging import logger
 from usb.utils import formatted_episodes, msecs
 from usb.search import Appsearch
@@ -65,15 +63,11 @@ class Subtitles:
         for first in iterator:
             yield chain([first], islice(iterator, chunksize - 1))
 
-    def index(self):
-        engine = self.video.title.lower()
-        logger.debug("engine: {}", engine)
+    def index(self, engine=None):
+        if not engine:
+            engine = self.video.title.lower()
 
-        try:
-            self.appsearch.get_engine(engine)
-        except NonExistentRecord as e:
-            logger.warning("engine {} doesn't exists, attempting to create: {}", e)
-            self.appsearch.create_engine(engine, "en")
+        logger.debug("engine: {}", engine)
 
         for n, chunk in enumerate(self.documents_chunked):
             documents = self.appsearch.index_documents(

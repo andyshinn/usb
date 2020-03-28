@@ -19,3 +19,9 @@ def index_subs(c, folder):
 @task
 def extract_thumbs(c, folder):
     mkv_task(folder, process_video)
+
+
+@task
+def list_files(c, folder):
+    for file in get_mkvs(folder):
+        logger.info("found file: {}", file)

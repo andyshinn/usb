@@ -1,4 +1,4 @@
-FROM python:3.6
+FROM python:3.8
 WORKDIR /app
 RUN wget -q -O - https://mkvtoolnix.download/gpg-pub-moritzbunkus.txt | APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=1 apt-key add - \
   && echo deb https://mkvtoolnix.download/debian/ buster main > /etc/apt/sources.list.d/mkvtoolnix.list \

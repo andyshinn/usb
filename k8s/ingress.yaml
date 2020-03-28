@@ -7,24 +7,30 @@ metadata:
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
 spec:
   rules:
-  - host: appsearch-127-0-0-1.nip.io
-    http:
+  - host: appsearch.seinfeld.app
+    http: &rules_appsearch
       paths:
         - path: /
           backend:
             serviceName: appsearch
             servicePort: 3002
-  - host: web-127-0-0-1.nip.io
-    http:
+  - host: web.seinfeld.app
+    http: &rules_web
       paths:
         - path: /
           backend:
             serviceName: web
             servicePort: 5000
-  - host: flower-127-0-0-1.nip.io
-    http:
+  - host: flower.seinfeld.app
+    http: &rules_flower
       paths:
         - path: /
           backend:
             serviceName: celeryflower
             servicePort: 5555
+  - host: appsearch-127-0-0-1.nip.io
+    http: *rules_appsearch
+  - host: web-127-0-0-1.nip.io
+    http: *rules_web
+  - host: flower-127-0-0-1.nip.io
+    http: *rules_flower

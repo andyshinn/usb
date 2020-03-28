@@ -1,8 +1,10 @@
+aiohttp
 celery
 discord.py
 elastic-app-search
-flask
 flower
+fsspec
+gcsfs
 guessit
 inflect
 invoke

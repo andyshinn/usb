@@ -1,5 +1,14 @@
 # usb
 
+USB is an intentionally ambiguous acronym that describes multiple software ideas related to the hit television series "Seinfeld".
+
+* Universal Seinfeld Bus: A USB (Universal Serial Bus) drive that can boot and play TV episodes on a PC.
+* Universal Seinfeld Bibliography: A web API for querying a quote database and returning images and data about the quote.
+* Universal Seinfeld Binary: A command line utility that can query the API and perform other tasks (protyped at https://github.com/progrium/usb).
+* Universal Seinfeld Bot: A bot that can live in chat software (such as Discord or Slack) and respond to commands to query the API.
+
+The only working piece at the moment is a Discord bot. You can join the Seinfeld Discord server at https://discord.gg/6z23uzH to play with it (try sending *what's the deal with "no soup for you"* in the *#whats-the-deal-with* channel).
+
 ## Local Development
 
 Requirements:
@@ -7,10 +16,23 @@ Requirements:
 * Kubernetes (we use [microk8s](https://microk8s.io/) in this example)
 * [Skaffold](https://skaffold.dev/)
 
+Install:
+
+```
+sudo snap install microk8s --classic
+sudo snap install kubectl --classic
+sudo apt install git docker.io
+```
+
 
 Bootstrap microk8s:
 
 ```
+sudo usermod -a -G $USER docker
+sudo usermod -a -G microk8s $USER
+sudo chown -f -R $USER ~/.kube
+
+# reload shell
 microk8s.kubectl config view --raw > $HOME/.kube/config
 microk8s.enable registry ingress dns
 ```
