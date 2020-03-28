@@ -34,8 +34,14 @@ spec:
         volumeMounts:
         - mountPath: /videos
           name: videos
-      restartPolicy: Always
+        - mountPath: /thumbnails
+          name: thumbnails
+          readOnly: true
       volumes:
+        - name: thumbnails
+          persistentVolumeClaim:
+            claimName: thumbnails
+            readOnly: true
         - name: videos
           hostPath:
             path: /videos
