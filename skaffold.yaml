@@ -4,9 +4,18 @@ metadata:
   name: usb
 build:
   artifacts:
-  - image: usb
+    - image: usb
   local:
     useBuildkit: true
     push: true
-deploy:
-  kubectl:
+profiles:
+  - name: local
+    deploy:
+      kustomize:
+        paths:
+          - k8s/overlays/local
+  - name: remote
+    deploy:
+      kustomize:
+        paths:
+          - k8s/overlays/remote

@@ -28,7 +28,7 @@ spec:
         - name: allow_es_settings_modification
           value: "true"
         - name: elasticsearch.host
-          value: http://elasticsearch:9200
+          value: http://$(SERVICE_NAME_ELASTICSEARCH):9200
         - name: app_search.external_url
           value: http://localhost
         image: docker.elastic.co/app-search/app-search:7.6.0

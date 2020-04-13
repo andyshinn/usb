@@ -23,15 +23,13 @@ async def image_search(request):
 
     logger.debug("Result from query: {}", result)
 
-    if result:
-        id = result["id"]["raw"]
-    else:
+    if not result:
         raise web.HTTPNotFound(reason=f"Could not find any image for query: {query}")
 
     of = fsspec.open(f"/thumbnails/{id}.png")
 
     if not of.fs.isfile(of.path):
-        task = extract_thumbnail_id.delay(engine, id)
+        task = extract_thumbnail_id.delay(engine, result)
         of.path = task.get(timeout=10)
 
     logger.complete()

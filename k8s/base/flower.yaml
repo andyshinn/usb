@@ -24,6 +24,11 @@ spec:
       - args: ["celery", "-A", "usb.tasks", "flower", "--port=5555"]
         image: usb
         name: celeryflower
+        env:
+          - name: SERVICE_NAME_BROKER
+            value: $(SERVICE_NAME_BROKER)
+          - name: SERVICE_NAME_RESULT
+            value: $(SERVICE_NAME_RESULT)
 ---
 apiVersion: v1
 kind: Service

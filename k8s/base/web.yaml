@@ -34,9 +34,16 @@ spec:
                 key: private_key
           - name: FLASK_APP
             value: usb.server
+          - name: SERVICE_NAME_BROKER
+            value: $(SERVICE_NAME_BROKER)
+          - name: SERVICE_NAME_RESULT
+            value: $(SERVICE_NAME_RESULT)
+          - name: SERVICE_NAME_APPSEARCH
+            value: $(SERVICE_NAME_APPSEARCH)
         volumeMounts:
         - mountPath: /videos
           name: videos
+          readOnly: true
         - mountPath: /thumbnails
           name: thumbnails
           readOnly: true
@@ -46,10 +53,9 @@ spec:
             claimName: thumbnails
             readOnly: true
         - name: videos
-          hostPath:
-            path: /videos
-            type: Directory
-status: {}
+          persistentVolumeClaim:
+            claimName: usb-videos
+            readOnly: true
 ---
 apiVersion: v1
 kind: Service
@@ -67,3 +73,29 @@ spec:
     targetPort: 5000
   selector:
     io.kompose.service: web
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: usb-videos
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 40Gi
+  volumeName: usb-videos
+  storageClassName: ""
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: usb-videos
+spec:
+  capacity:
+    storage: 40Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: /videos

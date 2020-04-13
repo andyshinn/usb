@@ -34,7 +34,7 @@ class Quotes(commands.Cog):
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
-        logger.debug("reaction: {}", str(reaction))
+        logger.trace("reaction: {}", str(reaction))
         if any(
             x in str(reaction) for x in REACTIONS
         ):  # TODO: use discord.py native emoji classes for comparison
@@ -49,17 +49,19 @@ class Quotes(commands.Cog):
     @commands.command(name="with")
     async def image(self, ctx, *, query):
         engine = "seinfeld"
-        logger.info("{} called with command: {}", ctx.author, query)
+        logger.info("called with command")
+        logger.debug("context: {}", ctx.__dict__)
+        logger.debug("query: {}", query)
         result = search.get(engine, query, rand=True)
-        logger.debug(result)
-        task = extract_thumbnail_id.delay(engine, result["id"]["raw"])
-        logger.debug(task)
+        logger.debug("search result: {}", result)
 
-        file = task.get(timeout=10)
+        if result:
+            task = extract_thumbnail_id.delay(engine, result)
+            file = task.get(timeout=10)
 
-        with open(file, "rb") as f:
-            picture = File(f)
-            await ctx.send(file=picture)
+            with open(file, "rb") as f:
+                picture = File(f)
+                await ctx.send(file=picture)
 
         await logger.complete()
 
@@ -72,7 +74,7 @@ class Bot(commands.Bot):
         logger.info("{} has connected to Discord!", self.user)
 
     async def on_message(self, message):
-        logger.debug("Message from {0.author}: {0.content}", message)
+        logger.trace("Message from {0.author}: {0.content}", message)
         await bot.process_commands(message)
 
 

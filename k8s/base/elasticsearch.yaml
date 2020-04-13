@@ -47,7 +47,6 @@ spec:
       - name: usb-es
         persistentVolumeClaim:
           claimName: usb-es
-status: {}
 ---
 apiVersion: v1
 kind: Service
@@ -80,7 +79,6 @@ spec:
       storage: 1Gi
   volumeName: usb-es
   storageClassName: ""
-status: {}
 ---
 apiVersion: v1
 kind: PersistentVolume

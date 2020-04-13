@@ -3,7 +3,11 @@ import sentry_sdk
 from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.aiohttp import AioHttpIntegration
 
-sentry_sdk.init(integrations=[CeleryIntegration(), AioHttpIntegration()])
+from usb import __version__
+
+sentry_sdk.init(
+    integrations=[CeleryIntegration(), AioHttpIntegration()], release=__version__
+)
 
 
 def breadcrumb_sink(message):

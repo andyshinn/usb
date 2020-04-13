@@ -5,7 +5,7 @@ from elastic_app_search import Client
 
 API_KEY = os.getenv("APPSEARCH_PRIVATE_KEY")
 ENGINE = "usb"
-ENDPOINT = "appsearch:3002/api/as/v1"
+ENDPOINT = "{}:3002/api/as/v1".format(os.getenv("SERVICE_NAME_APPSEARCH", "appsearch"))
 
 
 class Appsearch(Client):

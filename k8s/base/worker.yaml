@@ -36,23 +36,29 @@ spec:
               secretKeyRef:
                 name: sentry
                 key: dsn
+          - name: SERVICE_NAME_BROKER
+            value: $(SERVICE_NAME_BROKER)
+          - name: SERVICE_NAME_RESULT
+            value: $(SERVICE_NAME_RESULT)
+          - name: SERVICE_NAME_APPSEARCH
+            value: $(SERVICE_NAME_APPSEARCH)
         name: worker
         resources: {}
         volumeMounts:
           - mountPath: /videos
             name: videos
+            readOnly: true
           - mountPath: /thumbnails
             name: thumbnails
             readOnly: false
       restartPolicy: Always
       volumes:
-        - name: videos
-          hostPath:
-            path: /videos
-            type: Directory
         - name: thumbnails
           persistentVolumeClaim:
             claimName: thumbnails
+        - name: videos
+          persistentVolumeClaim:
+            claimName: usb-videos
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
