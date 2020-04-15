@@ -7,3 +7,4 @@ json/
 __pycache__/
 thumbnails/
 .env
+*.egg-info/

@@ -3,6 +3,7 @@ import os
 from celery import Celery, group
 from requests.exceptions import HTTPError
 from elastic_app_search.exceptions import BadRequest
+from invoke import task
 
 from usb.logging import logger
 from usb.utils import formatted_episodes, msecs
@@ -11,7 +12,9 @@ from usb.video import VideoFile
 
 app = Celery(
     "tasks",
-    broker="pyamqp://celery:wh4tsth3d34l@{}/celery".format(os.getenv("SERVICE_NAME_BROKER", "broker")),
+    broker="pyamqp://celery:wh4tsth3d34l@{}/celery".format(
+        os.getenv("SERVICE_NAME_BROKER", "broker")
+    ),
     backend="redis://{}".format(os.getenv("SERVICE_NAME_RESULT", "result")),
 )
 
@@ -67,6 +70,18 @@ def extract_thumbnail(file, milliseconds, dest, text):
 def extract_thumbnail_id(engine, document):
     dest = "/thumbnails/{}.png".format(document["id"]["raw"])
     video = VideoFile(document["path"]["raw"])
-    video.thumbnail(float(document["seconds_middle"]["raw"]), dest, document["content"]["raw"])
+    video.thumbnail(
+        float(document["seconds_middle"]["raw"]), dest, document["content"]["raw"]
+    )
 
     return dest
+
+
+@task
+def worker(c):
+    c.run("celery -A usb.tasks worker")
+
+
+@task
+def flower(c):
+    c.run("celery -A usb.tasks flower --port=5555")

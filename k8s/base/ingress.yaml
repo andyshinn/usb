@@ -14,7 +14,7 @@ spec:
           backend:
             serviceName: appsearch
             servicePort: 3002
-  - host: web.seinfeld.app
+  - host: seinfeld.app
     http: &rules_web
       paths:
         - path: /

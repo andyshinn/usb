@@ -6,3 +6,4 @@ COPY docker/policy.xml /etc/ImageMagick-6/policy.xml
 COPY requirements.txt /app/requirements.txt
 RUN pip install -r requirements.txt
 COPY . /app
+RUN pip install -e .

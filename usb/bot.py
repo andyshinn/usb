@@ -3,6 +3,7 @@ import os
 from discord import File
 from discord.ext import commands
 from sentry_sdk import configure_scope, capture_exception
+from invoke import task
 
 from usb.logging import logger
 from usb.search import Appsearch
@@ -15,21 +16,32 @@ REACTIONS = ["whatsthedealwith", "seinfeld"]
 search = Appsearch()
 
 
-class Quotes(commands.Cog):
+class Quotes(commands.Cog, name="Seinfeld Quotes"):
     def __init__(self, bot):
         self.bot = bot
 
     @commands.Cog.listener()
     async def on_error(self, event, *args, **kwargs):
+        logger.exception("Bot error: {}", event)
         capture_exception(event)
+        await logger.complete()
 
     @commands.Cog.listener()
-    async def on_command_error(self, context, exception):
+    async def on_command_error(self, ctx, exception):
+        if isinstance(
+            exception,
+            (commands.errors.BadArgument, commands.errors.MissingRequiredArgument),
+        ):
+            await ctx.channel.send(
+                f"\N{CROSS MARK} Bad argument: {' '.join(exception.args)}",
+                delete_after=10,
+            )
+
         with configure_scope() as scope:
-            scope.user = {"username": str(context.author)}
-            scope.set_extra("invoked_with", context.invoked_with)
-            scope.set_extra("args", context.args)
-            scope.set_extra("kwargs", context.kwargs)
+            scope.user = {"username": str(ctx.author)}
+            scope.set_extra("invoked_with", ctx.invoked_with)
+            scope.set_extra("args", ctx.args)
+            scope.set_extra("kwargs", ctx.kwargs)
             capture_exception(exception)
 
     @commands.Cog.listener()
@@ -48,8 +60,22 @@ class Quotes(commands.Cog):
 
     @commands.command(name="with")
     async def image(self, ctx, *, query):
+        """Returns a show image of the searched quote
+
+        The with command takes show subtitle or quote to search and returns an image from that show
+        moment. You can enclose the search in quotes to lookup specific phrases.
+
+        For example:
+
+          what's the deal with "little Jerry"
+          what's the deal with i carry a purse
+        """
         engine = "seinfeld"
-        logger.info("called with command")
+        logger.info(
+            "Guild {} user {} channel {} querying: {}".format(
+                str(ctx.guild), str(ctx.author), str(ctx.channel), query
+            )
+        )
         logger.debug("context: {}", ctx.__dict__)
         logger.debug("query: {}", query)
         result = search.get(engine, query, rand=True)
@@ -68,18 +94,19 @@ class Quotes(commands.Cog):
 
 class Bot(commands.Bot):
     def __init__(self, **kwargs):
-        super(Bot, self).__init__(guild_subscriptions=False, **kwargs)
+        super(Bot, self).__init__(**kwargs)
 
     async def on_ready(self):
         logger.info("{} has connected to Discord!", self.user)
 
-    async def on_message(self, message):
-        logger.trace("Message from {0.author}: {0.content}", message)
-        await bot.process_commands(message)
 
-
-bot = Bot(command_prefix=PREFIXES)
+bot = Bot(command_prefix=PREFIXES, description="A Seinfeld related Discord bot.")
 bot.add_cog(Quotes(bot))
 
 if __name__ == "__main__":
+    bot.run(TOKEN)
+
+
+@task
+def run(c):
     bot.run(TOKEN)

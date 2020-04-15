@@ -1,3 +1,5 @@
 namePrefix: local-
 bases:
   - ../../base
+resources:
+  - config.yaml

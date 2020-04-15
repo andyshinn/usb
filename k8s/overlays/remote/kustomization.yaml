@@ -3,3 +3,5 @@ bases:
   - ../../base
 patchesStrategicMerge:
   - patch.yaml
+resources:
+  - config.yaml

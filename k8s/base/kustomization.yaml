@@ -2,15 +2,12 @@ commonLabels:
   app: usb
 
 resources:
+- usb.yaml
 - appsearch.yaml
-- bot.yaml
 - broker.yaml
 - elasticsearch.yaml
-- flower.yaml
 - ingress.yaml
 - result.yaml
-- web.yaml
-- worker.yaml
 
 vars:
   - name: SERVICE_NAME_BROKER

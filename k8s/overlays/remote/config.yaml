@@ -1,0 +1,14 @@
+---
+apiVersion: v1
+kind: ConfigMap
+data:
+  environment: remote
+metadata:
+  name: sentry
+---
+apiVersion: v1
+kind: ConfigMap
+data:
+  level: INFO
+metadata:
+  name: logger

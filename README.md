@@ -45,7 +45,16 @@ skaffold dev --default-repo=localhost:32000
 
 Visit the services:
 
-* Appsearch: http://appsearch-127-0-0-1.nip.io/
+* Appsearch: http://appsearch-127-0-0-1.nip.io
+* Web: http://web-127-0-0-1.nip.io/search/seinfeld/yada
+* Flower: http://flower-127-0-0-1.nip.io
+
+Update secrets:
+
+```
+kubectl create secret generic appsearch --from-literal=private_key=private-53spr5yjhgfss8w3fo3upnrs
+kubectl create secret generic sentry --from-literal=dsn=https://dc398d946786567bcf555aa2c1b1848@sentry.io/6785764
+```
 
 ## Notes
 

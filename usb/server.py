@@ -1,5 +1,6 @@
 from aiohttp import web
 import fsspec
+from invoke import task
 
 from usb.tasks import extract_thumbnail_id
 from usb.search import Appsearch
@@ -37,5 +38,7 @@ async def image_search(request):
     raise web.HTTPFound(of.path)
 
 
-app.add_routes(routes)
-web.run_app(app, port=5000)
+@task
+def run(c):
+    app.add_routes(routes)
+    web.run_app(app, port=5000)
