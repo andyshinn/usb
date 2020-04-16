@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 from celery import Celery, group
 from requests.exceptions import HTTPError
@@ -48,10 +49,7 @@ def process_video(file):
             file,
             msecs(sub.start, sub.end),
             "/thumbnails/{}-{}-{}-{}.png".format(
-                video.show.lower(),
-                video.season,
-                formatted_episodes(video.episode),
-                sub.index,
+                video.show.lower(), video.season, formatted_episodes(video.episode), sub.index
             ),
             sub.content,
         )
@@ -66,15 +64,30 @@ def extract_thumbnail(file, milliseconds, dest, text):
     video.thumbnail(milliseconds, dest, text)
 
 
+def generate_thumbnail(id, path, seconds_middle, content):
+    dest = "/thumbnails/{}.png".format(id)
+
+    if not Path(dest).exists():
+        video = VideoFile(path)
+        video.thumbnail(float(seconds_middle), dest, content)
+    return dest
+
+
 @app.task
-def extract_thumbnail_id(engine, document):
-    dest = "/thumbnails/{}.png".format(document["id"]["raw"])
-    video = VideoFile(document["path"]["raw"])
-    video.thumbnail(
-        float(document["seconds_middle"]["raw"]), dest, document["content"]["raw"]
+def extract_thumbnail_by_raw_document(document):
+    return generate_thumbnail(
+        document["id"]["raw"],
+        document["path"]["raw"],
+        document["seconds_middle"]["raw"],
+        document["content"]["raw"],
     )
 
-    return dest
+
+@app.task
+def extract_thumbnail_by_document(document):
+    return generate_thumbnail(
+        document["id"], document["path"], document["seconds_middle"], document["content"]
+    )
 
 
 @task

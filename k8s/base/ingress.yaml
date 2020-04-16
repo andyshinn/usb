@@ -32,5 +32,7 @@ spec:
     http: *rules_appsearch
   - host: web-127-0-0-1.nip.io
     http: *rules_web
+  - host: seinfeld.ngrok.io
+    http: *rules_web
   - host: flower-127-0-0-1.nip.io
     http: *rules_flower

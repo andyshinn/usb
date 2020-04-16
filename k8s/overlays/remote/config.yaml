@@ -12,3 +12,10 @@ data:
   level: INFO
 metadata:
   name: logger
+---
+apiVersion: v1
+kind: ConfigMap
+data:
+  base_url: "https://seinfeld.app"
+metadata:
+  name: usb

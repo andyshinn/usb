@@ -9,6 +9,13 @@ metadata:
 apiVersion: v1
 kind: ConfigMap
 data:
-  level: DEBUG
+  level: TRACE
 metadata:
   name: logger
+---
+apiVersion: v1
+kind: ConfigMap
+data:
+  base_url: "https://seinfeld.ngrok.io"
+metadata:
+  name: usb

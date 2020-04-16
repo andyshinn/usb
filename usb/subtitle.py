@@ -10,9 +10,7 @@ class Document:
         allowed_types = [str, int, list, float]
 
         self.__dict__.update(
-            (key, value)
-            for key, value in kwargs.items()
-            if type(value) in allowed_types
+            (key, value) for key, value in kwargs.items() if type(value) in allowed_types
         )
 
         self.timems = msecs(kwargs["start"], kwargs["end"])
@@ -20,10 +18,7 @@ class Document:
     @property
     def id(self):
         return "{}-{}-{}-{}".format(
-            self.title.lower(),
-            self.season,
-            formatted_episodes(self.episode),
-            self.index,
+            self.title.lower(), self.season, formatted_episodes(self.episode), self.index
         )
 
     @property
@@ -70,9 +65,5 @@ class Subtitles:
         logger.debug("engine: {}", engine)
 
         for n, chunk in enumerate(self.documents_chunked):
-            documents = self.appsearch.index_documents(
-                engine, [i.data for i in list(chunk)]
-            )
-            logger.debug(
-                "indexed {} chunk {} containing {}", str(self.video), n, len(documents)
-            )
+            documents = self.appsearch.index_documents(engine, [i.data for i in list(chunk)])
+            logger.debug("indexed {} chunk {} containing {}", str(self.video), n, len(documents))

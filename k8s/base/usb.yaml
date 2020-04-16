@@ -45,6 +45,11 @@ spec:
                 configMapKeyRef:
                   name: logger
                   key: level
+            - name: BASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: usb
+                  key: base_url
           volumeMounts:
             - mountPath: /videos
               name: videos
@@ -54,7 +59,7 @@ spec:
               readOnly: false
         - name: bot
           image: usb
-          args: ["usb", "bot.run"]
+          args: ["usb", "discord.run"]
           env:
             - name: APPSEARCH_PRIVATE_KEY
               valueFrom:
@@ -72,6 +77,11 @@ spec:
                 configMapKeyRef:
                   name: logger
                   key: level
+            - name: BASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: usb
+                  key: base_url
             - name: DISCORD_TOKEN
               valueFrom:
                 secretKeyRef:
@@ -123,6 +133,11 @@ spec:
                 configMapKeyRef:
                   name: logger
                   key: level
+            - name: BASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: usb
+                  key: base_url
           volumeMounts:
           - mountPath: /videos
             name: videos

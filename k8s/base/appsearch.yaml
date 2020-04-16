@@ -1,9 +1,6 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  annotations:
-    kompose.cmd: kompose convert -f docker-compose.yml
-    kompose.version: 1.19.0 (f63a961c)
   labels:
     io.kompose.service: appsearch
   name: appsearch
@@ -14,9 +11,6 @@ spec:
       io.kompose.service: appsearch
   template:
     metadata:
-      annotations:
-        kompose.cmd: kompose convert -f docker-compose.yml
-        kompose.version: 1.19.0 (f63a961c)
       creationTimestamp: null
       labels:
         io.kompose.service: appsearch
@@ -34,24 +28,30 @@ spec:
         image: docker.elastic.co/app-search/app-search:7.6.0
         name: appsearch
         ports:
-        - containerPort: 3002
-        resources: {}
+          - name: appsearch
+            containerPort: 3002
+        startupProbe:
+          tcpSocket:
+            port: appsearch
+          failureThreshold: 60
+          periodSeconds: 10
+        readinessProbe:
+          tcpSocket:
+            port: appsearch
+          failureThreshold: 5
+          periodSeconds: 10
       restartPolicy: Always
-status: {}
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  annotations:
-    kompose.cmd: kompose convert -f docker-compose.yml
-    kompose.version: 1.19.0 (f63a961c)
   creationTimestamp: null
   labels:
     io.kompose.service: appsearch
   name: appsearch
 spec:
   ports:
-  - name: "3002"
+  - name: appsearch
     port: 3002
     targetPort: 3002
   selector:
