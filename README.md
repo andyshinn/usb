@@ -1,4 +1,6 @@
-# usb
+# Universal Seinfeld Bus
+
+![what's the deal with "little jerry seinfeld"](images/sein_what_white.png)
 
 USB is an intentionally ambiguous acronym that describes multiple software ideas related to the hit television series "Seinfeld".
 
