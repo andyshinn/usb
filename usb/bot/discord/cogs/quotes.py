@@ -148,9 +148,9 @@ class Quotes(commands.Cog, name="Seinfeld Quotes"):
 
         if results:
             if not isinstance(ctx.channel, DMChannel):
-                await ctx.send("Sending the top {} results to {} in a private message.").format(
+                await ctx.send("Sending the top {} results to {} in a private message.".format(
                     len(results["results"]), ctx.author
-                )
+                ))
 
             for result in results["results"]:
                 id = result["id"]["raw"]
