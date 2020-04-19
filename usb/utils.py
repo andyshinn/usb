@@ -52,3 +52,14 @@ def is_iterable(object):
 
 def msecs(start, end):
     return round((start + (end - start) / 2).total_seconds() * 1000)
+
+
+def move_id(id, num):
+    id_list = id.split("-")
+    index = id_list[-1]
+    next_index = str(int(index) + num)
+    id_list.remove(index)
+    id_list.append(next_index)
+    id = "-".join(id_list)
+
+    return id

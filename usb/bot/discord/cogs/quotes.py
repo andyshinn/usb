@@ -7,11 +7,14 @@ from sentry_sdk import configure_scope, capture_exception
 
 from usb.logging import logger
 from usb.tasks import extract_thumbnail_by_raw_document, extract_thumbnail_by_document
+from usb.utils import move_id
 import usb
 
 
 class Quotes(commands.Cog, name="Seinfeld Quotes"):
     reactions = ["whatsthedealwith", "seinfeld"]
+    react_next = ["▶️", "➡️", "⏩", "⏭️"]
+    react_previous = ["◀️", "⬅️", "⏪", "⏮️"]
 
     def __init__(self, bot, search):
         self.bot = bot
@@ -58,15 +61,30 @@ class Quotes(commands.Cog, name="Seinfeld Quotes"):
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
-        logger.trace("reaction: {}", str(reaction))
+        logger.trace("reaction: {}", reaction)
+        ctx = await self.bot.get_context(reaction.message)
+
         if any(
             x in str(reaction) for x in Quotes.reactions
         ):  # TODO: use discord.py native emoji classes for comparison
             logger.info("sending image from reaction: {}", str(reaction))
             await self.image(
-                await self.bot.get_context(reaction.message),
+                ctx,
                 query=reaction.message.content,
             )
+        elif any(
+            x in str(reaction) for x in Quotes.react_next
+        ):
+            # check self
+            footer = reaction.message.embeds[0].footer.text
+            logger.trace(f"footer: {footer}")
+            await self.id(ctx, move_id(footer, 1))
+        elif any(
+            x in str(reaction) for x in Quotes.react_previous
+        ):
+            footer = reaction.message.embeds[0].footer.text
+            logger.trace(f"footer: {footer}")
+            await self.id(ctx, move_id(footer, -1))
 
         await logger.complete()
 
@@ -93,11 +111,10 @@ class Quotes(commands.Cog, name="Seinfeld Quotes"):
 
         if result:
             task = extract_thumbnail_by_raw_document.delay(result)
-            file = task.get(timeout=10)
+            task.get(timeout=10)
+            id = result["id"]["raw"]
 
-            with open(file, "rb") as f:
-                picture = File(f)
-                await ctx.send(file=picture)
+            await self.send_result(ctx, id)
 
         await logger.complete()
 
@@ -115,7 +132,8 @@ class Quotes(commands.Cog, name="Seinfeld Quotes"):
         """
 
         engine = id.split("-")[0]
-        path = Path(f"/thumbnails/{id}.png")
+        filename = f"{id}.png"
+        path = Path(f"/thumbnails/{filename}")
 
         if not path.exists():
             logger.debug(f"Path {path} doesn't exist, attempting to create")
@@ -128,11 +146,19 @@ class Quotes(commands.Cog, name="Seinfeld Quotes"):
             else:
                 logger.warn(f"Could not find document ID: {id}")
 
-        with path.open("rb") as f:
-            picture = File(f)
-            await ctx.send(file=picture)
-
+        await self.send_result(ctx, id)
         await logger.complete()
+
+    async def send_result(self, ctx, id):
+        filename = f"{id}.png"
+        path = Path(f"/thumbnails/{filename}")
+
+        with path.open("rb") as f:
+            picture = File(f, filename=f"{filename}")
+            embed = Embed()
+            embed.set_image(url=f"attachment://{filename}")
+            embed.set_footer(text=f"{id}")
+            await ctx.send(file=picture, embed=embed)
 
     @commands.command(name="search")
     async def search_subtitles(self, ctx, *, query):
