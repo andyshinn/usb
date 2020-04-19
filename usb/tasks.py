@@ -49,7 +49,10 @@ def process_video(file):
             file,
             msecs(sub.start, sub.end),
             "/thumbnails/{}-{}-{}-{}.png".format(
-                video.show.lower(), video.season, formatted_episodes(video.episode), sub.index
+                video.show.lower(),
+                video.season,
+                formatted_episodes(video.episode),
+                sub.index,
             ),
             sub.content,
         )
@@ -86,7 +89,10 @@ def extract_thumbnail_by_raw_document(document):
 @app.task
 def extract_thumbnail_by_document(document):
     return generate_thumbnail(
-        document["id"], document["path"], document["seconds_middle"], document["content"]
+        document["id"],
+        document["path"],
+        document["seconds_middle"],
+        document["content"],
     )
 
 

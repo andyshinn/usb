@@ -41,10 +41,12 @@ class Quotes(commands.Cog, name="Seinfeld Quotes"):
     @commands.Cog.listener()
     async def on_command_error(self, ctx, exception):
         if isinstance(
-            exception, (commands.errors.BadArgument, commands.errors.MissingRequiredArgument)
+            exception,
+            (commands.errors.BadArgument, commands.errors.MissingRequiredArgument),
         ):
             await ctx.channel.send(
-                f"\N{CROSS MARK} Bad argument: {' '.join(exception.args)}", delete_after=10
+                f"\N{CROSS MARK} Bad argument: {' '.join(exception.args)}",
+                delete_after=10,
             )
 
         with configure_scope() as scope:
@@ -62,7 +64,8 @@ class Quotes(commands.Cog, name="Seinfeld Quotes"):
         ):  # TODO: use discord.py native emoji classes for comparison
             logger.info("sending image from reaction: {}", str(reaction))
             await self.image(
-                await self.bot.get_context(reaction.message), query=reaction.message.content
+                await self.bot.get_context(reaction.message),
+                query=reaction.message.content,
             )
 
         await logger.complete()
@@ -148,20 +151,28 @@ class Quotes(commands.Cog, name="Seinfeld Quotes"):
 
         if results:
             if not isinstance(ctx.channel, DMChannel):
-                await ctx.send("Sending the top {} results to {} in a private message.".format(
-                    len(results["results"]), ctx.author
-                ))
+                await ctx.send(
+                    "Sending the top {} results to {} in a private message.".format(
+                        len(results["results"]), ctx.author
+                    )
+                )
 
             for result in results["results"]:
                 id = result["id"]["raw"]
                 task = extract_thumbnail_by_raw_document.delay(result)
                 task.get(timeout=10)
                 embed = Embed(description=result["content"]["raw"])
-                embed.add_field(name="Title", value=result["episode_title"]["raw"], inline=True)
                 embed.add_field(
-                    name="Episode", value=", ".join(result["episode"]["raw"]), inline=True
+                    name="Title", value=result["episode_title"]["raw"], inline=True
                 )
-                embed.add_field(name="Season", value=int(result["season"]["raw"]), inline=True)
+                embed.add_field(
+                    name="Episode",
+                    value=", ".join(result["episode"]["raw"]),
+                    inline=True,
+                )
+                embed.add_field(
+                    name="Season", value=int(result["season"]["raw"]), inline=True
+                )
                 embed.set_image(url=f"{self.base_url}/get/{id}.png")
                 embed.set_footer(text="{}id {}".format(ctx.prefix, id))
                 await ctx.author.send(embed=embed)

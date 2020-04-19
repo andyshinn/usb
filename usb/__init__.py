@@ -8,6 +8,11 @@ from usb.bot import discord
 
 __version__ = "0.0.8"
 
-sentry_sdk.init(integrations=[CeleryIntegration(), AioHttpIntegration()], release=f"usb@{__version__}")
+sentry_sdk.init(
+    integrations=[CeleryIntegration(), AioHttpIntegration()],
+    release=f"usb@{__version__}",
+)
 
-program = Program(namespace=Collection(cli, server, tasks, discord), version=__version__)
+program = Program(
+    namespace=Collection(cli, server, tasks, discord), version=__version__
+)

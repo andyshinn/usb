@@ -21,7 +21,9 @@ class VideoFile(InfoMixin):
     def __init__(self, path):
         super(VideoFile, self).__init__(path)
 
-        self.video_clip = VideoFileClip(path, target_resolution=(360, 640), verbose=False)
+        self.video_clip = VideoFileClip(
+            path, target_resolution=(360, 640), verbose=False
+        )
         self.path = path
 
         if not is_iterable(self.episode):
@@ -46,7 +48,9 @@ class VideoFile(InfoMixin):
             "align": "South",
         }
 
-        txt_clip = TextClip(color="white", stroke_color="white", stroke_width=1, **common)
+        txt_clip = TextClip(
+            color="white", stroke_color="white", stroke_width=1, **common
+        )
         txt_clip = txt_clip.set_pos((20, 250))
 
         txt_bg = TextClip(color="black", stroke_color="black", stroke_width=5, **common)
@@ -56,7 +60,7 @@ class VideoFile(InfoMixin):
 
     def extract_subs(self):
         with tempfile.NamedTemporaryFile() as subfile:
-            Extractor(str(self)).extract(subfile.name)
+            Extractor(self.path).extract(subfile.name)
 
             for subtitle in srt.parse(subfile.read().decode("utf-8")):
                 yield subtitle

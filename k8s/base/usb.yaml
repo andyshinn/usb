@@ -17,7 +17,7 @@ spec:
       containers:
         - name: worker
           args: ["usb", "tasks.worker"]
-          image: usb
+          image: gcr.io/seinfeld/usb
           env:
             - name: APPSEARCH_PRIVATE_KEY
               valueFrom:
@@ -58,7 +58,7 @@ spec:
               name: thumbnails
               readOnly: false
         - name: bot
-          image: usb
+          image: gcr.io/seinfeld/usb
           args: ["usb", "discord.run"]
           env:
             - name: APPSEARCH_PRIVATE_KEY
@@ -103,7 +103,7 @@ spec:
               readOnly: true
         - name: web
           args: ["usb", "server.run"]
-          image: usb
+          image: gcr.io/seinfeld/usb
           env:
             - name: APPSEARCH_PRIVATE_KEY
               valueFrom:
@@ -147,7 +147,7 @@ spec:
             readOnly: true
         - name: celeryflower
           args: ["usb", "tasks.flower"]
-          image: usb
+          image: gcr.io/seinfeld/usb
           env:
             - name: SERVICE_NAME_BROKER
               value: $(SERVICE_NAME_BROKER)
@@ -224,7 +224,7 @@ spec:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
   hostPath:
-    path: /videos
+    path: /var/usb/videos
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -234,7 +234,20 @@ metadata:
   name: thumbnails
 spec:
   accessModes:
-    - ReadWriteMany
+    - ReadWriteOnce
   resources:
     requests:
       storage: 1Gi
+# ---
+# apiVersion: v1
+# kind: PersistentVolume
+# metadata:
+#   name: thumbnails
+# spec:
+#   capacity:
+#     storage: 40Gi
+#   accessModes:
+#     - ReadWriteOnce
+#   persistentVolumeReclaimPolicy: Retain
+#   hostPath:
+#     path: /var/usb/thumbnails

@@ -10,7 +10,9 @@ ENDPOINT = "{}:3002/api/as/v1".format(os.getenv("SERVICE_NAME_APPSEARCH", "appse
 
 class Appsearch(Client):
     def __init__(self, endpoint=ENDPOINT, api_key=API_KEY):
-        super(Appsearch, self).__init__(base_endpoint=endpoint, api_key=api_key, use_https=False)
+        super(Appsearch, self).__init__(
+            base_endpoint=endpoint, api_key=api_key, use_https=False
+        )
 
     def get_document(self, engine, id):
         documents = self.get_documents(engine, [id])

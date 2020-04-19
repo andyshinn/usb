@@ -4,10 +4,12 @@ metadata:
   name: usb
 build:
   artifacts:
-    - image: usb
+    - image: gcr.io/seinfeld/usb
   local:
     useBuildkit: true
     push: true
+deploy:
+  statusCheckDeadlineSeconds: 600
 profiles:
   - name: local
     deploy:

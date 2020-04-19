@@ -7,7 +7,7 @@ from usb.tasks import process_subtitle, process_video
 
 def mkv_task(folder, task_name):
     for file in get_mkvs(folder):
-        task = task_name.delay(str(file))
+        task = task_name.delay(file.path)
         logger.info("submitting {} task: {}", task_name, task)
 
 

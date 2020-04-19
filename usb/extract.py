@@ -53,7 +53,9 @@ class Extractor(object):
     def _parse_segment(self, info):
 
         segment = re.search(
-            r"^\|\+ Tracks\n" r"^(.*?)" r"^\|\+ ", info.decode("utf-8"), re.MULTILINE | re.DOTALL
+            r"^\|\+ Tracks\n" r"^(.*?)" r"^\|\+ ",
+            info.decode("utf-8"),
+            re.MULTILINE | re.DOTALL,
         ).group(1)
 
         tracks = segment.split("| + Track\n")
@@ -68,7 +70,9 @@ class Extractor(object):
         for track in tracks:
             if re.search("Track type: subtitles", track):
                 track_num = re.search(
-                    r"Track number: \d+" r" \(track ID for mkvmerge & mkvextract: (\d+)\)\n", track
+                    r"Track number: \d+"
+                    r" \(track ID for mkvmerge & mkvextract: (\d+)\)\n",
+                    track,
                 ).group(1)
 
                 language = re.search(r"Language: (.+)", track).group(1)
@@ -82,7 +86,9 @@ class Extractor(object):
 
     def _extract_track(self, mkv_file, track_number, subtitle_file):
         if subtitle_file is None:
-            subtitle_file = "{}.{}".format(path.splitext(mkv_file)[0], SUBTITLE_EXTENSION)
+            subtitle_file = "{}.{}".format(
+                path.splitext(mkv_file)[0], SUBTITLE_EXTENSION
+            )
 
         try:
             for chunk in mkvextract(
