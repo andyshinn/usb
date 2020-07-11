@@ -1,5 +1,6 @@
 aiohttp
 celery
+dblpy
 discord.py
 elastic-app-search
 flower

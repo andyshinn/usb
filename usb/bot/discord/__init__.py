@@ -6,6 +6,7 @@ from invoke import task
 from usb.logging import logger
 from usb.search import Appsearch
 from usb.bot.discord.cogs.quotes import Quotes
+from usb.bot.discord.cogs.topgg import TopGG
 
 TOKEN = os.getenv("DISCORD_TOKEN")
 PREFIXES = [
@@ -29,6 +30,7 @@ class Bot(commands.Bot):
 search = Appsearch()
 bot = Bot(command_prefix=PREFIXES, description="A Seinfeld related Discord bot.")
 bot.add_cog(Quotes(bot, search))
+bot.add_cog(TopGG(bot))
 
 
 @task
