@@ -8,7 +8,7 @@ services:
     - "discovery.type=single-node"
     - "cluster.name=app-search-docker-cluster"
     - "bootstrap.memory_lock=true"
-    - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+    - "ES_JAVA_OPTS=-Xms2g -Xmx4g"
     ulimits:
       memlock:
         soft: -1
@@ -21,7 +21,7 @@ services:
     environment:
     - "elasticsearch.host=http://elasticsearch:9200"
     - "allow_es_settings_modification=true"
-    - "JAVA_OPTS=-Xms2g -Xmx2g"
+    - "JAVA_OPTS=-Xms2g -Xmx4g"
     ports:
       - 3002:3002
 
@@ -34,11 +34,14 @@ services:
 
   worker:
     build: .
-    command: celery -A usb.tasks worker
+    command: usb tasks.worker
     environment:
       - APPSEARCH_PRIVATE_KEY
+      - SENTRY_DSN
+      - SENTRY_ENVIRONMENT
+      - BASE_URL
     volumes:
-      - /home/andys/Videos:/videos:ro
+      - $VIDEOS_FOLDER:/videos:ro
       - thumbs:/thumbnails
 
   result:
@@ -49,10 +52,13 @@ services:
 
   web:
     build: .
-    command: flask run -h 0.0.0.0
+    command: usb server.run
     environment:
       - APPSEARCH_PRIVATE_KEY
       - FLASK_APP=usb.server
+      - SENTRY_DSN
+      - SENTRY_ENVIRONMENT
+      - BASE_URL
     volumes:
       - thumbs:/thumbnails:ro
     ports:
@@ -60,17 +66,20 @@ services:
 
   flower:
     build: .
-    command: celery -A usb.tasks flower --address=0.0.0.0 --port=5555
+    command: usb tasks.flower
     ports:
       - 5555:5555
 
   bot:
     build: .
-    command: python3 -m usb.bot
+    command: usb discord.run
     stop_grace_period: 15s
     environment:
       - DISCORD_TOKEN
       - APPSEARCH_PRIVATE_KEY
+      - SENTRY_DSN
+      - SENTRY_ENVIRONMENT
+      - BASE_URL
     volumes:
       - thumbs:/thumbnails:ro
 
