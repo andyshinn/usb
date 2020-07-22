@@ -76,6 +76,7 @@ services:
     stop_grace_period: 15s
     environment:
       - DISCORD_TOKEN
+      - DBL_TOKEN
       - APPSEARCH_PRIVATE_KEY
       - SENTRY_DSN
       - SENTRY_ENVIRONMENT
