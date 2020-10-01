@@ -18,7 +18,7 @@ certifi==2019.11.28       # via requests, sentry-sdk
 chardet==3.0.4            # via aiohttp, requests
 dblpy==0.3.4              # via -r requirements.in
 decorator==4.4.2          # via gcsfs, moviepy
-discord.py==1.3.4         # via -r requirements.in
+discord.py==1.5.0         # via -r requirements.in
 elastic-app-search==7.6.0  # via -r requirements.in
 flower==0.9.3             # via -r requirements.in
 fsspec==0.6.3             # via -r requirements.in, gcsfs
@@ -29,6 +29,7 @@ guessit==3.1.0            # via -r requirements.in
 idna==2.9                 # via requests, yarl
 imageio-ffmpeg==0.4.1     # via moviepy
 imageio==2.8.0            # via moviepy
+importlib-metadata==2.0.0  # via inflect, kombu, pluggy, pytest
 inflect==4.1.0            # via -r requirements.in
 invoke==1.4.1             # via -r requirements.in
 kombu==4.6.8              # via celery
@@ -68,8 +69,8 @@ urllib3==1.25.8           # via requests, sentry-sdk
 vine==1.3.0               # via amqp, celery
 watchdog[watchmedo]==0.10.2  # via -r requirements.in
 wcwidth==0.1.8            # via pytest
-websockets==8.1           # via discord.py
 yarl==1.4.2               # via aiohttp
+zipp==3.2.0               # via importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools

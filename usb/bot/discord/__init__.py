@@ -1,5 +1,6 @@
 import os
 
+from discord import Intents
 from discord.ext import commands
 from invoke import task
 
@@ -27,8 +28,9 @@ class Bot(commands.Bot):
         logger.info("{} has connected to Discord!", self.user)
 
 
+intents = Intents(messages=True, reactions=True)
 search = Appsearch()
-bot = Bot(command_prefix=PREFIXES, description="A Seinfeld related Discord bot.")
+bot = Bot(command_prefix=PREFIXES, case_insensitive=True, intents=intents, description="A Seinfeld related Discord bot.")
 bot.add_cog(Quotes(bot, search))
 bot.add_cog(TopGG(bot))
 
