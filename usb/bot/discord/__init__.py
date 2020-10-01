@@ -16,6 +16,9 @@ PREFIXES = [
     "what's the deal ",
     "what’s the deal ",
     "whats the deal ",
+    "What's the deal ",
+    "What’s the deal ",
+    "Whats the deal ",
     "what the deal ",
 ]
 
