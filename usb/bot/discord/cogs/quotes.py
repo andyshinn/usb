@@ -85,25 +85,22 @@ class Quotes(commands.Cog, name="Seinfeld Quotes"):
         ctx = await self.bot.get_context(reaction.message)
         regex = r"\w+(?:\-\d+){3,4}$"
 
-        if any(
-            x in str(reaction) for x in Quotes.reactions
-        ):  # TODO: use discord.py native emoji classes for comparison
+        # TODO: use discord.py native emoji classes for comparison
+        if any(x in str(reaction) for x in Quotes.reactions):
             logger.info("sending image from reaction: {}", str(reaction))
-            await self.image(
-                ctx,
-                query=reaction.message.content,
-            )
-        elif any(x in str(reaction) for x in Quotes.react_next):
-            # check self
+            await self.image(ctx, query=reaction.message.content)
+        elif any(x in str(reaction) for x in Quotes.react_next) and reaction.message.author == self.bot.user:
             footer = reaction.message.embeds[0].footer.text
-            match = re.search(regex, footer)
-            logger.trace(f"footer: {footer}")
-            await self.id(ctx, move_id(match.group(), 1))
-        elif any(x in str(reaction) for x in Quotes.react_previous):
+            if footer:
+                match = re.search(regex, footer)
+                logger.trace(f"footer: {footer}")
+                await self.id(ctx, move_id(match.group(), 1))
+        elif any(x in str(reaction) for x in Quotes.react_previous) and reaction.message.author == self.bot.user:
             footer = reaction.message.embeds[0].footer.text
-            match = re.search(regex, footer)
-            logger.trace(f"footer: {footer}")
-            await self.id(ctx, move_id(match.group(), -1))
+            if footer:
+                match = re.search(regex, footer)
+                logger.trace(f"footer: {footer}")
+                await self.id(ctx, move_id(match.group(), -1))
 
         await logger.complete()
 
