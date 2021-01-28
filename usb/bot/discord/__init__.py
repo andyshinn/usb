@@ -35,7 +35,7 @@ class Bot(commands.Bot):
         logger.info("{} has connected to Discord!", self.user)
 
 
-intents = Intents(messages=True, reactions=True)
+intents = Intents(messages=True, reactions=True, guilds=True)
 search = Meilisearch()
 bot = Bot(
     command_prefix=PREFIXES, case_insensitive=True, intents=intents, description="A Seinfeld related Discord bot."

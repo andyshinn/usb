@@ -6,7 +6,7 @@ from sentry_sdk.integrations.celery import CeleryIntegration
 from usb import cli, server, tasks
 from usb.bot import discord
 
-__version__ = "0.0.11"
+__version__ = "0.0.12"
 
 sentry_sdk.init(
     integrations=[CeleryIntegration(), AioHttpIntegration()],
