@@ -1,4 +1,4 @@
-FROM python:3.8-slim
+FROM python:3.9-slim
 WORKDIR /app
 RUN apt-get -q update \
   && apt-get -qy install mkvtoolnix ffmpeg imagemagick ghostscript

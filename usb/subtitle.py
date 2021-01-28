@@ -1,60 +1,36 @@
 from itertools import chain, islice
+from typing import Iterator
 
+from srt import Subtitle
+
+from usb.document import Document
 from usb.logging import logger
-from usb.utils import formatted_episodes, msecs
-from usb.search import Appsearch
-
-
-class Document:
-    def __init__(self, **kwargs):
-        allowed_types = [str, int, list, float]
-
-        self.__dict__.update(
-            (key, value)
-            for key, value in kwargs.items()
-            if type(value) in allowed_types
-        )
-
-        self.timems = msecs(kwargs["start"], kwargs["end"])
-
-    @property
-    def id(self):
-        return "{}-{}-{}-{}".format(
-            self.title.lower(),
-            self.season,
-            formatted_episodes(self.episode),
-            self.index,
-        )
-
-    @property
-    def data(self):
-        return {"id": self.id, **vars(self)}
-
-    def __repr__(self):
-        return "{}({!r})".format(self.__class__.__name__, self.id)
+from usb.search import Meilisearch
+from usb.video import VideoFile
 
 
 class Subtitles:
-    def __init__(self, video):
+    def __init__(self, video: VideoFile):
         self.video = video
-        self.appsearch = Appsearch()
+        self.search = Meilisearch()
 
     @property
-    def list(self):
-        for subtitle in self.video.extract_subs():
-            yield subtitle
+    def list(self) -> Iterator[Subtitle]:
+        yield from self.video.extract_subs()
 
     @property
     def documents(self):
         for subtitle in self.list:
             yield Document(
-                **vars(self.video),
-                **vars(subtitle),
+                content=subtitle.content,
+                episode=self.video.episode,
+                episode_title=self.video.episode_title,
+                index=subtitle.index,
+                path=self.video.path,
+                season=self.video.season,
                 seconds_start=subtitle.start.total_seconds(),
-                seconds_middle=(
-                    (subtitle.start.total_seconds() + subtitle.end.total_seconds()) / 2
-                ),
-                seconds_end=subtitle.end.total_seconds()
+                seconds_end=subtitle.end.total_seconds(),
+                title=self.video.title,
             )
 
     @property
@@ -63,16 +39,9 @@ class Subtitles:
         for first in iterator:
             yield chain([first], islice(iterator, chunksize - 1))
 
-    def index(self, engine=None):
-        if not engine:
-            engine = self.video.title.lower()
-
-        logger.debug("engine: {}", engine)
+    def index(self, index_name):
+        index = self.search.index(index_name)
 
         for n, chunk in enumerate(self.documents_chunked):
-            documents = self.appsearch.index_documents(
-                engine, [i.data for i in list(chunk)]
-            )
-            logger.debug(
-                "indexed {} chunk {} containing {}", str(self.video), n, len(documents)
-            )
+            documents = index.add_documents([i.data for i in list(chunk)])
+            logger.debug("indexed {} chunk {} containing {}", str(self.video), n, len(documents))

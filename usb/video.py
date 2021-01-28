@@ -1,4 +1,5 @@
 import tempfile
+from typing import Iterator
 
 from guessit import guessit
 from moviepy.editor import VideoFileClip, CompositeVideoClip, TextClip
@@ -19,12 +20,13 @@ class InfoMixin:
 
 class VideoFile(InfoMixin):
     def __init__(self, path):
-        super(VideoFile, self).__init__(path)
-
-        self.video_clip = VideoFileClip(
-            path, target_resolution=(360, 640), verbose=False
-        )
+        self.episode_title = None
         self.path = path
+        self.season = None
+        self.show = None
+        self.title = None
+        self.video_clip = VideoFileClip(path, target_resolution=(360, 640), verbose=False)
+        super(VideoFile, self).__init__(path)
 
         if not is_iterable(self.episode):
             self.episode = [self.episode]
@@ -48,9 +50,7 @@ class VideoFile(InfoMixin):
             "align": "South",
         }
 
-        txt_clip = TextClip(
-            color="white", stroke_color="white", stroke_width=1, **common
-        )
+        txt_clip = TextClip(color="white", stroke_color="white", stroke_width=1, **common)
         txt_clip = txt_clip.set_pos((20, 250))
 
         txt_bg = TextClip(color="black", stroke_color="black", stroke_width=5, **common)
@@ -58,12 +58,11 @@ class VideoFile(InfoMixin):
 
         return CompositeVideoClip([txt_bg, txt_clip], size=(720, 1280))
 
-    def extract_subs(self):
+    def extract_subs(self) -> Iterator[srt.Subtitle]:
         with tempfile.NamedTemporaryFile() as subfile:
             Extractor(self.path).extract(subfile.name)
 
-            for subtitle in srt.parse(subfile.read().decode("utf-8")):
-                yield subtitle
+            yield from srt.parse(subfile.read().decode("utf-8"))
 
     def thumbnail(self, time, dest, text):
         text_clip = VideoFile._generate_text(text)
@@ -74,5 +73,5 @@ class VideoFile(InfoMixin):
         try:
             video.save_frame(dest, t=(time + 1.0))
             logger.info("writing out thumbnail: {}", dest)
-        except Exception:
+        except ValueError:
             logger.opt(exception=True).debug("Exception logged with debug level:")

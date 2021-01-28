@@ -8,3 +8,5 @@ __pycache__/
 thumbnails/
 .env
 *.egg-info/
+.vscode/
+.idea/

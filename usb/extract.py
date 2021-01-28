@@ -1,11 +1,13 @@
 # https://github.com/0x64746b/matitor
 
-from os import path
 import re
 import sys
+from os import path
 
-from sh import mkvinfo, mkvextract, ErrorReturnCode
+from sh import Command, ErrorReturnCode
 
+mkvinfo = Command("mkvinfo")
+mkvextract = Command("mkvextract")
 
 SUBTITLE_EXTENSION = "srt"
 
@@ -50,7 +52,8 @@ class Extractor(object):
 
         return self._parse_tracks(raw_tracks)
 
-    def _parse_segment(self, info):
+    @staticmethod
+    def _parse_segment(info):
 
         segment = re.search(
             r"^\|\+ Tracks\n" r"^(.*?)" r"^\|\+ ",
@@ -63,19 +66,22 @@ class Extractor(object):
         # return list(filter(lambda x: x != "", tracks))
         return filter(None, tracks)
 
-    def _parse_tracks(self, tracks):
+    @staticmethod
+    def _parse_tracks(tracks):
 
         subtitle_tracks = []
 
         for track in tracks:
             if re.search("Track type: subtitles", track):
                 track_num = re.search(
-                    r"Track number: \d+"
-                    r" \(track ID for mkvmerge & mkvextract: (\d+)\)\n",
+                    r"Track number: \d+" r" \(track ID for mkvmerge & mkvextract: (\d+)\)\n",
                     track,
                 ).group(1)
 
-                language = re.search(r"Language: (.+)", track).group(1)
+                language = re.search(r"Language: (.+)", track)
+
+                if language:
+                    language = language.group(1)
 
                 name_field = re.search(r"Name: (.+)", track)
                 name = name_field.group(1) if name_field else ""
@@ -84,11 +90,10 @@ class Extractor(object):
 
         return subtitle_tracks
 
-    def _extract_track(self, mkv_file, track_number, subtitle_file):
+    @staticmethod
+    def _extract_track(mkv_file, track_number, subtitle_file):
         if subtitle_file is None:
-            subtitle_file = "{}.{}".format(
-                path.splitext(mkv_file)[0], SUBTITLE_EXTENSION
-            )
+            subtitle_file = "{}.{}".format(path.splitext(mkv_file)[0], SUBTITLE_EXTENSION)
 
         try:
             for chunk in mkvextract(

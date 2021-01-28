@@ -1,12 +1,16 @@
+import re
 from pathlib import Path
 import os
 
+# noinspection PyPackageRequirements
 from discord import File, Embed, DMChannel
+# noinspection PyPackageRequirements
 from discord.ext import commands
 from sentry_sdk import configure_scope, capture_exception
 
 from usb.logging import logger
-from usb.tasks import extract_thumbnail_by_raw_document, extract_thumbnail_by_document
+from usb.search import Meilisearch
+from usb.tasks import extract_thumbnail_by_document
 from usb.utils import move_id
 import usb
 
@@ -16,7 +20,7 @@ class Quotes(commands.Cog, name="Seinfeld Quotes"):
     react_next = ["▶️", "➡️", "⏩", "⏭️"]
     react_previous = ["◀️", "⬅️", "⏪", "⏮️"]
 
-    def __init__(self, bot, search):
+    def __init__(self, bot, search: Meilisearch):
         self.bot = bot
         self.search = search
         self.base_url = os.getenv("BASE_URL", "https://seinfeld.ngrok.io")
@@ -43,26 +47,43 @@ class Quotes(commands.Cog, name="Seinfeld Quotes"):
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, exception):
+        args = " ".join(exception.args)
+
         if isinstance(
             exception,
             (commands.errors.BadArgument, commands.errors.MissingRequiredArgument),
         ):
             await ctx.channel.send(
-                f"\N{CROSS MARK} Bad argument: {' '.join(exception.args)}",
+                f"\N{CROSS MARK} Bad argument: {args}",
                 delete_after=10,
             )
+            logger.info(f"Bad arguments: {args}")
+            await logger.complete()
 
-        with configure_scope() as scope:
-            scope.user = {"username": str(ctx.author)}
-            scope.set_extra("invoked_with", ctx.invoked_with)
-            scope.set_extra("args", ctx.args)
-            scope.set_extra("kwargs", ctx.kwargs)
-            capture_exception(exception)
+        elif isinstance(
+            exception,
+            commands.errors.CommandNotFound,
+        ):
+            await ctx.channel.send(
+                f"\N{CROSS MARK} Command not found: {ctx.invoked_with}",
+                delete_after=10,
+            )
+            logger.info(f"Command not found: {ctx.invoked_with}")
+            await logger.complete()
+        else:
+            with configure_scope() as scope:
+                scope.set_extra("username", str(ctx.author))
+                scope.set_extra("invoked_with", ctx.invoked_with)
+                scope.set_extra("args", ctx.args)
+                scope.set_extra("kwargs", ctx.kwargs)
+                capture_exception(exception)
+                raise exception
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
         logger.trace("reaction: {}", reaction)
         ctx = await self.bot.get_context(reaction.message)
+        regex = r"\w+(?:\-\d+){3,4}$"
 
         if any(
             x in str(reaction) for x in Quotes.reactions
@@ -72,19 +93,17 @@ class Quotes(commands.Cog, name="Seinfeld Quotes"):
                 ctx,
                 query=reaction.message.content,
             )
-        elif any(
-            x in str(reaction) for x in Quotes.react_next
-        ):
+        elif any(x in str(reaction) for x in Quotes.react_next):
             # check self
             footer = reaction.message.embeds[0].footer.text
+            match = re.search(regex, footer)
             logger.trace(f"footer: {footer}")
-            await self.id(ctx, move_id(footer, 1))
-        elif any(
-            x in str(reaction) for x in Quotes.react_previous
-        ):
+            await self.id(ctx, move_id(match.group(), 1))
+        elif any(x in str(reaction) for x in Quotes.react_previous):
             footer = reaction.message.embeds[0].footer.text
+            match = re.search(regex, footer)
             logger.trace(f"footer: {footer}")
-            await self.id(ctx, move_id(footer, -1))
+            await self.id(ctx, move_id(match.group(), -1))
 
         await logger.complete()
 
@@ -110,16 +129,12 @@ class Quotes(commands.Cog, name="Seinfeld Quotes"):
         logger.debug("search result: {}", result)
 
         if result:
-            task = extract_thumbnail_by_raw_document.delay(result)
-            task.get(timeout=10)
-            id = result["id"]["raw"]
-
-            await self.send_result(ctx, id)
+            await Quotes.send_result(ctx, result)
 
         await logger.complete()
 
     @commands.command()
-    async def id(self, ctx, id):
+    async def id(self, ctx, document_id):
         """Returns a specific image ID
 
         The with command takes a subtitle index ID in the format of: <show>-<season>-<episode>-<subtitle_index>
@@ -131,37 +146,38 @@ class Quotes(commands.Cog, name="Seinfeld Quotes"):
         $ein id seinfeld-4-3-4-50
         """
 
-        engine = id.split("-")[0]
-        filename = f"{id}.png"
+        engine = document_id.split("-")[0]
+        document = self.search.get_document(engine, document_id)
+
+        if document:
+            await Quotes.send_result(ctx, document)
+        else:
+            logger.warning(f"Could not find document ID: {document_id}")
+
+        await logger.complete()
+
+    @staticmethod
+    async def send_result(ctx, document):
+        filename = f"{document.id}.png"
         path = Path(f"/thumbnails/{filename}")
 
         if not path.exists():
             logger.debug(f"Path {path} doesn't exist, attempting to create")
-            document = self.search.get_document(engine, id)
+            logger.debug(f"Found document: {document}")
+            task = extract_thumbnail_by_document.delay(document.to_dict())
+            task.get(timeout=10)
 
-            if document:
-                logger.debug(f"Found document: {document}")
-                task = extract_thumbnail_by_document.delay(document)
-                task.get(timeout=10)
-            else:
-                logger.warn(f"Could not find document ID: {id}")
-
-        await self.send_result(ctx, id)
-        await logger.complete()
-
-    async def send_result(self, ctx, id):
-        filename = f"{id}.png"
-        path = Path(f"/thumbnails/{filename}")
+        prefix = ctx.prefix if ctx.prefix else "$ein "
 
         with path.open("rb") as f:
             picture = File(f, filename=f"{filename}")
-            embed = Embed()
+            embed = Embed(title=document.human_season_episode)
             embed.set_image(url=f"attachment://{filename}")
-            embed.set_footer(text=f"{id}")
+            embed.set_footer(text="{}id {}".format(prefix, document.id))
             await ctx.send(file=picture, embed=embed)
 
     @commands.command(name="search")
-    async def search_subtitles(self, ctx, *, query):
+    async def search_subtitles(self, ctx: commands.Context, *, query):
         """Searches through subtitles and returns results
 
         The with command takes a query as the argument and sends results in a DM.
@@ -177,33 +193,9 @@ class Quotes(commands.Cog, name="Seinfeld Quotes"):
 
         if results:
             if not isinstance(ctx.channel, DMChannel):
-                await ctx.send(
-                    "Sending the top {} results to {} in a private message.".format(
-                        len(results["results"]), ctx.author
-                    )
-                )
-
-            for result in results["results"]:
-                id = result["id"]["raw"]
-                task = extract_thumbnail_by_raw_document.delay(result)
-                task.get(timeout=10)
-                embed = Embed(description=result["content"]["raw"])
-                embed.add_field(
-                    name="Title", value=result["episode_title"]["raw"], inline=True
-                )
-                embed.add_field(
-                    name="Episode",
-                    value=", ".join(result["episode"]["raw"]),
-                    inline=True,
-                )
-                embed.add_field(
-                    name="Season", value=int(result["season"]["raw"]), inline=True
-                )
-                embed.set_image(url=f"{self.base_url}/get/{id}.png")
-                embed.set_footer(text="{}id {}".format(ctx.prefix, id))
-                await ctx.author.send(embed=embed)
-
-        await logger.complete()
+                await ctx.send(f"Sending the top {len(results)} results to {ctx.author.name} in a private message.")
+            for result in results:
+                await Quotes.send_result(ctx, result)
 
     @commands.command()
     async def version(self, ctx):

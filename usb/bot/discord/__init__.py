@@ -1,15 +1,19 @@
 import os
 
+# noinspection PyPackageRequirements
 from discord import Intents
+# noinspection PyPackageRequirements
 from discord.ext import commands
 from invoke import task
 
 from usb.logging import logger
-from usb.search import Appsearch
+from usb.search import Meilisearch
 from usb.bot.discord.cogs.quotes import Quotes
 from usb.bot.discord.cogs.topgg import TopGG
+from usb.bot.discord.cogs.health import Health
 
 TOKEN = os.getenv("DISCORD_TOKEN")
+PING_URL = os.getenv("PING_URL", None)
 PREFIXES = [
     "$ein ",
     "$sein ",
@@ -32,10 +36,14 @@ class Bot(commands.Bot):
 
 
 intents = Intents(messages=True, reactions=True)
-search = Appsearch()
-bot = Bot(command_prefix=PREFIXES, case_insensitive=True, intents=intents, description="A Seinfeld related Discord bot.")
+search = Meilisearch()
+bot = Bot(
+    command_prefix=PREFIXES, case_insensitive=True, intents=intents, description="A Seinfeld related Discord bot."
+)
 bot.add_cog(Quotes(bot, search))
 bot.add_cog(TopGG(bot))
+if PING_URL:
+    bot.add_cog(Health(bot, PING_URL))
 
 
 @task

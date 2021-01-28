@@ -1,24 +1,28 @@
 from invoke import task
 
 from usb.logging import logger
-from usb.utils import get_mkvs
+from usb.search import Meilisearch
 from usb.tasks import process_subtitle, process_video
+from usb.utils import get_mkvs
 
 
-def mkv_task(folder, task_name):
+def mkv_task(index: str, folder: str, task_name):
     for file in get_mkvs(folder):
-        task = task_name.delay(file.path)
-        logger.info("submitting {} task: {}", task_name, task)
+        task_job = task_name.delay(index, file.path)
+        logger.info("submitting {} task: {}", task_name, task_job)
 
 
 @task
-def index_subs(c, folder):
-    mkv_task(folder, process_subtitle)
+def index_subs(c, index_name, folder):
+    client = Meilisearch()
+    index = client.get_or_create_index(index_name, {"primaryKey": "id"})
+    index.update_settings({"searchableAttributes": ["content"]})
+    mkv_task(index_name, folder, process_subtitle)
 
 
 @task
-def extract_thumbs(c, folder):
-    mkv_task(folder, process_video)
+def extract_thumbs(c, index, folder):
+    mkv_task(index, folder, process_video)
 
 
 @task

@@ -1,36 +1,52 @@
 import os
 import random
+from typing import Union, List
 
-from elastic_app_search import Client
+from meilisearch import Client
 
-API_KEY = os.getenv("APPSEARCH_PRIVATE_KEY")
-ENGINE = "usb"
-ENDPOINT = "{}:3002/api/as/v1".format(os.getenv("SERVICE_NAME_APPSEARCH", "appsearch"))
+from usb.document import Document
+
+MEILI_API_KEY = os.getenv("MEILI_API_KEY_PRIVATE", None)
+MEILI_ENDPOINT = "http://{}:7700".format(os.getenv("SERVICE_NAME_MEILISEARCH", "meilisearch"))
 
 
-class Appsearch(Client):
-    def __init__(self, endpoint=ENDPOINT, api_key=API_KEY):
-        super(Appsearch, self).__init__(
-            base_endpoint=endpoint, api_key=api_key, use_https=False
-        )
+class Meilisearch(Client):
+    def __init__(self, url=MEILI_ENDPOINT, api_key=MEILI_API_KEY):
+        super(Meilisearch, self).__init__(url, api_key)
 
-    def get_document(self, engine, id):
-        documents = self.get_documents(engine, [id])
+    def get_document(self, index, document_id) -> Union[Document, None]:
+        document: dict = self.index(index).get_document(document_id)
 
-        if len(documents) == 1:
-            return documents[0]
+        if not document:
+            return None
 
-        return None
+        return Document(**document_without_id(document))
 
-    def get(self, engine, query, rand=True):
-        results = self.search(engine, query)
+    def get(self, index_name: str, query: str, rand=True) -> Union[Document, None]:
+        results = self.index(index_name).search(query, dict(limit=20))
 
-        if results["results"]:
+        if len(results["hits"]) > 0:
             if rand:
-                result = random.choice(results["results"])
+                result: dict = random.choice(results["hits"])
             else:
-                result = results["results"][0]
+                result = results["hits"][0]
 
-            return result
+            return Document(**document_without_id(result))
 
         return None
+
+    def search(self, index_name: str, query: str, options=None) -> Union[List[Document], None]:
+        if options is None:
+            options = {"limit": 10}
+
+        index = self.index(index_name)
+        results = index.search(query, options)
+
+        if not results.get("hits", None):
+            return None
+
+        return list(map(lambda result: Document(**document_without_id(result)), results.get("hits")))
+
+
+def document_without_id(result: dict):
+    return {k: v for (k, v) in result.items() if k != "id"}

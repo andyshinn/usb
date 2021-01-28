@@ -1,20 +1,20 @@
-from aiohttp import web
 import fsspec
+from aiohttp import web
 from invoke import task
 
-from usb.tasks import extract_thumbnail_by_raw_document, extract_thumbnail_by_document
-from usb.search import Appsearch
 from usb.logging import logger
+from usb.search import Meilisearch
+from usb.tasks import extract_thumbnail_by_document
 
 app = web.Application()
 routes = web.RouteTableDef()
+search = Meilisearch()
 
 routes.static("/thumbnails", "/thumbnails", show_index=True)
 
 
 @routes.get("/search/{show}/{query}")
 async def image_search(request):
-    search = Appsearch()
     show = request.match_info["show"]
     query = request.match_info["query"]
     engine = show.lower()
@@ -30,10 +30,10 @@ async def image_search(request):
     of = fsspec.open(f"/thumbnails/{id}.png")
 
     if not of.fs.isfile(of.path):
-        task = extract_thumbnail_by_raw_document.delay(result)
-        of.path = task.get(timeout=10)
+        celery_task = extract_thumbnail_by_document.delay(result.to_dict())
+        of.path = celery_task.get(timeout=10)
 
-    logger.complete()
+    await logger.complete()
 
     raise web.HTTPFound(of.path)
 
@@ -47,20 +47,19 @@ async def image_id(request):
     if of.fs.isfile(of.path):
         return web.FileResponse(of.path)
     else:
-        search = Appsearch()
         engine = file.split("-")[0].lower()
-        id = file.strip(".png").lower()
-        logger.debug(engine, id)
-        result = search.get_document(engine, id)
+        document_id = file.strip(".png").lower()
+        logger.debug(engine, document_id)
+        result = search.get_document(engine, document_id)
+
+        await logger.complete()
 
         if result:
-            task = extract_thumbnail_by_document.delay(result)
-            task.get(timeout=10)
+            celery_task = extract_thumbnail_by_document.delay(result.to_dict())
+            celery_task.get(timeout=10)
             return web.FileResponse(of.path)
         else:
-            raise web.HTTPNotFound(reason=f"Could not find any image ID: {id}")
-
-    logger.complete()
+            raise web.HTTPNotFound(reason=f"Could not find any image ID: {document_id}")
 
 
 @task

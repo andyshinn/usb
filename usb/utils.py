@@ -34,17 +34,15 @@ def formatted_episodes(episodes):
 
 
 def formatted_video(show, season, episodes):
-    return "{} season {} {} {}".format(
-        show, season, p.plural("episode", len(episodes)), p.join(episodes)
-    )
+    return "{} season {} {} {}".format(show, season, p.plural("episode", len(episodes)), p.join(episodes))
 
 
 def get_mkvs(path):
-    return fsspec.open_files(path, auto_mkdirs=False)
+    return fsspec.open_files(path, auto_mkdir=False)
 
 
-def is_iterable(object):
-    if isinstance(object, Iterable):
+def is_iterable(iterable):
+    if isinstance(iterable, Iterable):
         return True
 
     return False
@@ -54,12 +52,12 @@ def msecs(start, end):
     return round((start + (end - start) / 2).total_seconds() * 1000)
 
 
-def move_id(id, num):
-    id_list = id.split("-")
+def move_id(document_id, num):
+    id_list = document_id.split("-")
     index = id_list[-1]
     next_index = str(int(index) + num)
     id_list.remove(index)
     id_list.append(next_index)
-    id = "-".join(id_list)
+    document_id = "-".join(id_list)
 
-    return id
+    return document_id

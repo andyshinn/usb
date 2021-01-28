@@ -1,11 +1,12 @@
 import os
 from pathlib import Path
 
-from celery import Celery, group
+from celery import Celery, group, Task
 from requests.exceptions import HTTPError
 from elastic_app_search.exceptions import BadRequest
 from invoke import task
 
+from usb.document import Document
 from usb.logging import logger
 from usb.utils import formatted_episodes, msecs
 from usb.subtitle import Subtitles
@@ -13,15 +14,13 @@ from usb.video import VideoFile
 
 app = Celery(
     "tasks",
-    broker="pyamqp://celery:wh4tsth3d34l@{}/celery".format(
-        os.getenv("SERVICE_NAME_BROKER", "broker")
-    ),
+    broker="pyamqp://celery:wh4tsth3d34l@{}/celery".format(os.getenv("SERVICE_NAME_BROKER", "broker")),
     backend="redis://{}".format(os.getenv("SERVICE_NAME_RESULT", "result")),
 )
 
 
-@app.task(bind=True)
-def process_subtitle(self, path):
+@app.task(bind=True, ignore_result=True)
+def process_subtitle(self: Task, index_name, path):
     video = VideoFile(path)
     subtitles = Subtitles(video)
 
@@ -30,9 +29,9 @@ def process_subtitle(self, path):
         return "video ignored, skipping processing"
     else:
         try:
-            subtitles.index()
-        except (HTTPError, BadRequest) as e:
-            self.retry(countdown=10, exc=e)
+            subtitles.index(index_name)
+        except (HTTPError, BadRequest) as error:
+            self.retry(countdown=10, exc=error, max_retries=3)
 
 
 @app.task
@@ -67,33 +66,18 @@ def extract_thumbnail(file, milliseconds, dest, text):
     video.thumbnail(milliseconds, dest, text)
 
 
-def generate_thumbnail(id, path, seconds_middle, content):
-    dest = "/thumbnails/{}.png".format(id)
+def generate_thumbnail(document: Document):
+    dest = "/thumbnails/{}.png".format(document.id)
 
     if not Path(dest).exists():
-        video = VideoFile(path)
-        video.thumbnail(float(seconds_middle), dest, content)
+        video = VideoFile(document.path)
+        video.thumbnail(float(document.seconds_middle), dest, document.content)
     return dest
 
 
 @app.task
-def extract_thumbnail_by_raw_document(document):
-    return generate_thumbnail(
-        document["id"]["raw"],
-        document["path"]["raw"],
-        document["seconds_middle"]["raw"],
-        document["content"]["raw"],
-    )
-
-
-@app.task
-def extract_thumbnail_by_document(document):
-    return generate_thumbnail(
-        document["id"],
-        document["path"],
-        document["seconds_middle"],
-        document["content"],
-    )
+def extract_thumbnail_by_document(document: dict):
+    return generate_thumbnail(Document.from_dict(document))
 
 
 @task
